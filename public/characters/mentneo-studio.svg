@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="100%" height="100%">
+  <defs>
+    <filter id="sticker-glow-studio" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="12" stdDeviation="16" flood-color="#FB923C" flood-opacity="0.45" />
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000000" flood-opacity="0.5" />
+    </filter>
+    <linearGradient id="body-orange" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FDBA74" />
+      <stop offset="50%" stop-color="#FB923C" />
+      <stop offset="100%" stop-color="#C2410C" />
+    </linearGradient>
+    <linearGradient id="lens-film" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38BDF8" />
+      <stop offset="50%" stop-color="#818CF8" />
+      <stop offset="100%" stop-color="#C084FC" />
+    </linearGradient>
+  </defs>
+
+  <g filter="url(#sticker-glow-studio)">
+    <!-- White Sticker Cut-out -->
+    <path d="M 140 40 L 260 40 L 305 110 L 315 250 C 315 320 270 355 200 355 C 130 355 85 320 85 250 L 95 110 Z"
+          fill="#FFFFFF" stroke="#FFFFFF" stroke-width="14" stroke-linejoin="round" />
+
+    <!-- Clapperboard Hat Header -->
+    <g transform="translate(130, 42)">
+      <rect x="0" y="0" width="140" height="34" rx="8" fill="#1C1917" stroke="#FFFFFF" stroke-width="3" />
+      <polygon points="15,0 35,0 20,34 0,34" fill="#FFFFFF" />
+      <polygon points="50,0 70,0 55,34 35,34" fill="#FFFFFF" />
+      <polygon points="85,0 105,0 90,34 70,34" fill="#FFFFFF" />
+      <polygon points="120,0 140,0 125,34 105,34" fill="#FFFFFF" />
+    </g>
+
+    <!-- Main Orange Studio Body -->
+    <path d="M 110 85 C 110 85 290 85 290 85 C 310 160 305 260 280 320 C 255 350 145 350 120 320 C 95 260 90 160 110 85 Z"
+          fill="url(#body-orange)" />
+
+    <!-- Body Highlights -->
+    <ellipse cx="160" cy="120" rx="35" ry="14" fill="#FFFFFF" opacity="0.4" transform="rotate(-15, 160, 120)" />
+
+    <!-- Big Cinema Camera Lens Center Eye -->
+    <circle cx="200" cy="180" r="48" fill="#0C0A09" stroke="#FED7AA" stroke-width="6" />
+    <circle cx="200" cy="180" r="36" fill="url(#lens-film)" />
+    <!-- Aperture Blades -->
+    <polygon points="200,150 216,166 184,166" fill="#1E1B4B" opacity="0.6" />
+    <polygon points="230,180 214,196 214,164" fill="#1E1B4B" opacity="0.6" />
+    <polygon points="200,210 184,194 216,194" fill="#1E1B4B" opacity="0.6" />
+    <polygon points="170,180 186,164 186,196" fill="#1E1B4B" opacity="0.6" />
+    <!-- Center Pupil & Glare -->
+    <circle cx="200" cy="180" r="14" fill="#FFFFFF" />
+    <circle cx="204" cy="176" r="6" fill="#F97316" />
+
+    <!-- REC Indicator -->
+    <circle cx="270" cy="135" r="7" fill="#EF4444" />
+    <text x="270" y="138" font-family="Arial, sans-serif" font-weight="900" font-size="6" fill="#FFFFFF" text-anchor="middle">REC</text>
+
+    <!-- 4K Cinema Badge on Chest -->
+    <rect x="150" y="250" width="100" height="32" rx="16" fill="#1C1917" stroke="#FDBA74" stroke-width="3" />
+    <text x="200" y="271" font-family="Arial, sans-serif" font-weight="900" font-size="13" fill="#FED7AA" text-anchor="middle">4K GEN AI</text>
+
+    <!-- Film Strip Ribbons -->
+    <rect x="145" y="295" width="110" height="12" rx="6" fill="#431407" />
+    <circle cx="158" cy="301" r="3" fill="#FED7AA" />
+    <circle cx="178" cy="301" r="3" fill="#FED7AA" />
+    <circle cx="198" cy="301" r="3" fill="#FED7AA" />
+    <circle cx="218" cy="301" r="3" fill="#FED7AA" />
+    <circle cx="238" cy="301" r="3" fill="#FED7AA" />
+
+    <!-- Golden Sparkles -->
+    <polygon points="320,190 326,202 338,206 326,210 320,222 314,210 302,206 314,202" fill="#FDE047" />
+  </g>
+</svg>

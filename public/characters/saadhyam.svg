@@ -1,0 +1,87 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="100%" height="100%">
+  <defs>
+    <!-- Sticker filter -->
+    <filter id="sticker-glow-saadhyam" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="12" stdDeviation="16" flood-color="#8B5CF6" flood-opacity="0.45" />
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000000" flood-opacity="0.5" />
+    </filter>
+    <!-- Gradients -->
+    <linearGradient id="body-purple" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#C084FC" />
+      <stop offset="50%" stop-color="#8B5CF6" />
+      <stop offset="100%" stop-color="#581C87" />
+    </linearGradient>
+    <linearGradient id="visor-cyan" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#38BDF8" />
+      <stop offset="100%" stop-color="#0284C7" />
+    </linearGradient>
+    <linearGradient id="gold-accent" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FDE047" />
+      <stop offset="100%" stop-color="#CA8A04" />
+    </linearGradient>
+    <linearGradient id="phone-glow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#A855F7" />
+      <stop offset="100%" stop-color="#6B21A8" />
+    </linearGradient>
+  </defs>
+
+  <!-- Thick White Sticker Outline Shadow Group -->
+  <g filter="url(#sticker-glow-saadhyam)">
+    <!-- White Sticker Border (Silhouette Offset) -->
+    <path d="M 200 45 C 120 45 95 100 95 160 C 80 160 65 180 65 210 C 65 240 85 260 100 265 C 105 320 145 355 200 355 C 255 355 295 320 300 265 C 315 260 335 240 335 210 C 335 180 320 160 305 160 C 305 100 280 45 200 45 Z" 
+          fill="#FFFFFF" stroke="#FFFFFF" stroke-width="14" stroke-linejoin="round" />
+
+    <!-- Head & Body Main Silhouette -->
+    <path d="M 200 55 C 130 55 108 105 108 165 C 108 245 140 345 200 345 C 260 345 292 245 292 165 C 292 105 270 55 200 55 Z" 
+          fill="url(#body-purple)" />
+
+    <!-- Specular Highlight Top -->
+    <path d="M 150 75 Q 200 62 250 75 Q 200 90 150 75 Z" fill="#FFFFFF" opacity="0.35" />
+
+    <!-- Headphone Band -->
+    <path d="M 100 170 C 95 90 135 60 200 60 C 265 60 305 90 300 170" 
+          fill="none" stroke="#E2E8F0" stroke-width="16" stroke-linecap="round" />
+    <path d="M 100 170 C 95 90 135 60 200 60 C 265 60 305 90 300 170" 
+          fill="none" stroke="#94A3B8" stroke-width="8" stroke-linecap="round" />
+
+    <!-- Headphone Ear Cups -->
+    <!-- Left Cup -->
+    <rect x="75" y="165" width="34" height="65" rx="17" fill="#1E1B4B" stroke="#A855F7" stroke-width="4" />
+    <circle cx="92" cy="198" r="9" fill="#C084FC" />
+    <!-- Right Cup -->
+    <rect x="291" y="165" width="34" height="65" rx="17" fill="#1E1B4B" stroke="#A855F7" stroke-width="4" />
+    <circle cx="308" cy="198" r="9" fill="#C084FC" />
+
+    <!-- Microphone Boom -->
+    <path d="M 95 210 Q 95 275 160 275 L 180 275" fill="none" stroke="#E2E8F0" stroke-width="8" stroke-linecap="round" />
+    <circle cx="186" cy="275" r="10" fill="url(#gold-accent)" />
+    <circle cx="186" cy="275" r="4" fill="#FFFFFF" />
+
+    <!-- Dark High-Tech Visor -->
+    <rect x="130" y="130" width="140" height="75" rx="36" fill="#09090B" stroke="#C084FC" stroke-width="4" />
+    
+    <!-- Visor Glow Eyes -->
+    <ellipse cx="165" cy="165" rx="14" ry="18" fill="url(#visor-cyan)" />
+    <ellipse cx="235" cy="165" rx="14" ry="18" fill="url(#visor-cyan)" />
+    <circle cx="169" cy="160" r="5" fill="#FFFFFF" />
+    <circle cx="239" cy="160" r="5" fill="#FFFFFF" />
+
+    <!-- Waveform on Belly -->
+    <g transform="translate(145, 230)">
+      <rect x="10" y="15" width="6" height="20" rx="3" fill="#A855F7" />
+      <rect x="24" y="8" width="6" height="34" rx="3" fill="#C084FC" />
+      <rect x="38" y="2" width="6" height="46" rx="3" fill="#F472B6" />
+      <rect x="52" y="12" width="6" height="26" rx="3" fill="#C084FC" />
+      <rect x="66" y="5" width="6" height="40" rx="3" fill="#38BDF8" />
+      <rect x="80" y="16" width="6" height="18" rx="3" fill="#A855F7" />
+      <rect x="94" y="20" width="6" height="10" rx="3" fill="#818CF8" />
+    </g>
+
+    <!-- Adorable Cheeks -->
+    <ellipse cx="140" cy="195" rx="10" ry="6" fill="#F472B6" opacity="0.7" />
+    <ellipse cx="260" cy="195" rx="10" ry="6" fill="#F472B6" opacity="0.7" />
+
+    <!-- Sparkle Accent -->
+    <path d="M 285 85 L 290 100 L 305 105 L 290 110 L 285 125 L 280 110 L 265 105 L 280 100 Z" fill="#FDE047" />
+  </g>
+</svg>

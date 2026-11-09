@@ -1,0 +1,28 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="630" fill="#07080A"/>
+  
+  <!-- Subtle Matrix grid -->
+  <defs>
+    <pattern id="grid" width="48" height="48" patternUnits="userSpaceOnUse">
+      <path d="M 48 0 L 0 0 0 48" fill="none" stroke="rgba(255, 255, 255, 0.03)" stroke-width="1"/>
+    </pattern>
+  </defs>
+  <rect width="1200" height="630" fill="url(#grid)" />
+
+  <!-- Ambient Specular Flare -->
+  <circle cx="600" cy="240" r="280" fill="#2F5BFF" opacity="0.08" filter="blur(80px)"/>
+
+  <!-- Geometric Monogram M -->
+  <g transform="translate(560, 160) scale(2.5)">
+    <rect x="4" y="6" width="4.5" height="20" rx="1.2" fill="#FFFFFF"/>
+    <path d="M8.5 8L16 17.5L23.5 8" stroke="#FFFFFF" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round"/>
+    <rect x="23.5" y="6" width="4.5" height="20" rx="1.2" fill="#FFFFFF"/>
+    <circle cx="16" cy="24" r="1.8" fill="#2F5BFF"/>
+  </g>
+
+  <!-- Typographic Wordmark & Thesis -->
+  <text x="600" y="340" text-anchor="middle" fill="#FFFFFF" font-family="system-ui, -apple-system, sans-serif" font-size="44" font-weight="600" letter-spacing="6">MENTNEO</text>
+  <text x="600" y="380" text-anchor="middle" fill="#8A8F98" font-family="monospace" font-size="14" letter-spacing="4">RESEARCH &amp; DEV · EST. 2025</text>
+  <text x="600" y="440" text-anchor="middle" fill="#F2F2F0" font-family="system-ui, -apple-system, sans-serif" font-size="24" font-weight="300">Intelligence, engineered.</text>
+  <text x="600" y="490" text-anchor="middle" fill="#525866" font-family="monospace" font-size="13" letter-spacing="2">HYDERABAD · KAKINADA · SAN FRANCISCO · LONDON</text>
+</svg>

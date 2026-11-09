@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="100%" height="100%">
+  <defs>
+    <filter id="sticker-glow-search" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="12" stdDeviation="16" flood-color="#A3E635" flood-opacity="0.45" />
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000000" flood-opacity="0.5" />
+    </filter>
+    <linearGradient id="body-lime" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#BEF264" />
+      <stop offset="50%" stop-color="#A3E635" />
+      <stop offset="100%" stop-color="#4D7C0F" />
+    </linearGradient>
+    <linearGradient id="lens-holo" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#67E8F9" />
+      <stop offset="50%" stop-color="#38BDF8" />
+      <stop offset="100%" stop-color="#0284C7" />
+    </linearGradient>
+  </defs>
+
+  <g filter="url(#sticker-glow-search)">
+    <!-- White Sticker Cut-out Silhouette -->
+    <path d="M 200 45 C 130 45 95 95 95 165 C 80 180 70 215 85 250 C 95 270 120 280 125 330 C 130 355 270 355 275 330 C 280 280 305 270 315 250 C 330 215 320 180 305 165 C 305 95 270 45 200 45 Z"
+          fill="#FFFFFF" stroke="#FFFFFF" stroke-width="14" stroke-linejoin="round" />
+
+    <!-- Main Body Shape -->
+    <path d="M 200 55 C 135 55 105 105 105 170 C 105 260 135 340 200 340 C 265 340 295 260 295 170 C 295 105 265 55 200 55 Z"
+          fill="url(#body-lime)" />
+
+    <!-- Gloss Arc -->
+    <path d="M 145 80 Q 200 65 255 80 Q 200 100 145 80 Z" fill="#FFFFFF" opacity="0.35" />
+
+    <!-- Explorer Cap / Sensor Brim -->
+    <path d="M 120 110 Q 200 80 280 110" fill="none" stroke="#1A2E05" stroke-width="12" stroke-linecap="round" />
+    <circle cx="200" cy="85" r="9" fill="#FACC15" stroke="#FFFFFF" stroke-width="2" />
+
+    <!-- High-Tech Holographic Magnifying Monocle on Right Eye -->
+    <circle cx="235" cy="170" r="38" fill="url(#lens-holo)" stroke="#FFFFFF" stroke-width="6" />
+    <circle cx="235" cy="170" r="30" fill="none" stroke="#67E8F9" stroke-width="2" stroke-dasharray="8 4" />
+    <path d="M 262 195 L 295 228" stroke="#FFFFFF" stroke-width="10" stroke-linecap="round" />
+    <path d="M 262 195 L 295 228" stroke="#1A2E05" stroke-width="4" stroke-linecap="round" />
+
+    <!-- Left Eye (Inquisitive Wink or Big Eye) -->
+    <circle cx="160" cy="170" r="22" fill="#14532D" stroke="#FFFFFF" stroke-width="4" />
+    <circle cx="160" cy="170" r="14" fill="#A3E635" />
+    <circle cx="163" cy="166" r="5" fill="#FFFFFF" />
+
+    <!-- Monocle Lens Glare Reflection -->
+    <path d="M 218 152 Q 235 145 252 152 Q 235 160 218 152 Z" fill="#FFFFFF" opacity="0.6" />
+
+    <!-- Chest Citation Verified Shield -->
+    <g transform="translate(160, 245)">
+      <polygon points="40,5 75,20 65,60 40,75 15,60 5,20" fill="#1A2E05" stroke="#BEF264" stroke-width="3" />
+      <polyline points="28,38 36,46 52,28" fill="none" stroke="#FACC15" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" />
+    </g>
+
+    <text x="200" y="335" font-family="Arial, sans-serif" font-weight="900" font-size="11" fill="#1A2E05" text-anchor="middle">ZERO-HALLUCINATION</text>
+
+    <!-- Sparkles -->
+    <polygon points="90,115 95,125 105,130 95,135 90,145 85,135 75,130 85,125" fill="#FACC15" />
+  </g>
+</svg>
