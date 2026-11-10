@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useSmoothScroll } from "@/components/ui/SmoothScrollProvider";
-import MentneoLogo from "@/components/ui/MentneoLogo";
+import Logo from "@/components/ui/Logo";
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
@@ -53,14 +53,15 @@ export default function Navbar() {
             e.preventDefault();
             scrollTo("#chapter-1");
           }}
-          className="group flex items-center gap-3"
+          className="group flex items-center"
           data-cursor
           data-cursor-label="HOME"
         >
-          <MentneoLogo
+          <Logo
             variant={isLightSection ? "light" : "dark"}
             size="md"
-            animated={true}
+            showWordmark={true}
+            showTagline={true}
           />
         </Link>
 
@@ -113,34 +114,13 @@ export default function Navbar() {
           >
             Mentlearn
           </button>
-          <button
-            onClick={() => scrollTo("#chapter-7")}
-            className={`transition-colors ${
-              isLightSection ? "hover:text-ink" : "hover:text-white"
-            }`}
-          >
-            Coordinates
-          </button>
         </nav>
 
-        {/* Right Action & System Status */}
+        {/* Right Action */}
         <div className="flex items-center gap-4">
-          <div
-            className={`hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full border transition-colors ${
-              isLightSection
-                ? "border-[#E9E7E1] bg-white/70 text-ink/70"
-                : "border-white/[0.08] bg-white/[0.02] text-white/60"
-            }`}
-          >
-            <span className="w-1.5 h-1.5 rounded-full bg-[#2F5BFF] animate-pulse" />
-            <span className="font-mono text-[10px] uppercase tracking-wideMono">
-              Cluster: Active
-            </span>
-          </div>
-
           <button
             onClick={() => scrollTo("#chapter-8")}
-            className={`relative inline-flex items-center justify-center px-4 py-2 rounded-full border text-xs font-medium tracking-tight transition-all duration-300 ${
+            className={`relative inline-flex items-center justify-center px-5 py-2.5 rounded-full border text-xs font-medium tracking-tight transition-all duration-300 ${
               isLightSection
                 ? "border-ink/20 bg-ink text-white hover:bg-black"
                 : "border-white/20 bg-white/10 text-white hover:bg-white hover:text-black"

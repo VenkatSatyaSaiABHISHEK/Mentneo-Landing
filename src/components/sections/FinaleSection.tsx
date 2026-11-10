@@ -2,10 +2,9 @@
 
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useSmoothScroll } from "@/components/ui/SmoothScrollProvider";
+import Logo from "@/components/ui/Logo";
 
 export default function FinaleSection() {
-  const { scrollTo } = useSmoothScroll();
   const [modalOpen, setModalOpen] = useState(false);
   const [inquiryType, setInquiryType] = useState("Sovereign Deployment");
   const [submitted, setSubmitted] = useState(false);
@@ -41,7 +40,7 @@ export default function FinaleSection() {
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/10 bg-white/[0.03] mb-6">
           <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
           <span className="font-mono text-[11px] uppercase tracking-wideMono text-white/70">
-            CHAPTER 08 · THE ENGAGEMENT
+            CONTACT · THE ENGAGEMENT
           </span>
         </div>
 
@@ -49,7 +48,7 @@ export default function FinaleSection() {
           Begin deterministic engineering.
         </h2>
         <p className="mt-4 text-sm sm:text-base text-[#8A8F98] max-w-xl mx-auto leading-relaxed">
-          Whether you require an air-gapped sovereign model cluster, real-time voice intelligence,
+          Whether you require an air-gapped sovereign model architecture, real-time voice intelligence,
           or early silicon collaboration on the Neuro HGI die.
         </p>
 
@@ -81,30 +80,21 @@ export default function FinaleSection() {
         </h1>
       </div>
 
-      {/* MINIMAL FOOTER */}
-      <footer className="relative z-10 w-full max-w-7xl mx-auto pt-10 border-t border-white/[0.08] flex flex-col md:flex-row items-center justify-between gap-6 font-mono text-[11px] text-white/40">
+      {/* MINIMAL FOOTER: Keep ONLY Hyderabad, India, contact email, copyright */}
+      <footer className="relative z-10 w-full max-w-7xl mx-auto pt-10 border-t border-white/[0.08] flex flex-col md:flex-row items-center justify-between gap-6 font-mono text-[11px] text-white/50">
         <div className="flex items-center gap-3">
-          <span className="text-white font-medium">MENTNEO R&D</span>
+          <Logo size="sm" showWordmark={true} showTagline={false} />
           <span>·</span>
-          <span>EST. 2025</span>
-          <span>·</span>
-          <span>HYD · KAK · SF · LDN</span>
+          <span>Hyderabad, India</span>
         </div>
 
-        <div className="flex items-center gap-6">
-          <button
-            onClick={() => scrollTo("#chapter-1")}
-            className="hover:text-white transition-colors"
-          >
-            Back to Top ↑
-          </button>
+        <div>
           <a
             href="mailto:research@mentneo.ai"
-            className="hover:text-white transition-colors"
+            className="hover:text-white transition-colors underline-offset-4 hover:underline"
           >
             research@mentneo.ai
           </a>
-          <span>ISO 27001 / FedRAMP Ready</span>
         </div>
 
         <div>
@@ -159,7 +149,7 @@ export default function FinaleSection() {
                     Briefing Request Logged
                   </h4>
                   <p className="text-xs text-white/60 font-mono">
-                    A Mentneo research partner will transmit cryptographic meeting coordinates within 4 business hours.
+                    A Mentneo research partner will transmit meeting access details within 4 business hours.
                   </p>
                 </div>
               ) : (

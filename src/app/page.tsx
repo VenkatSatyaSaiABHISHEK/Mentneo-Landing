@@ -9,7 +9,6 @@ import HorizontalJourney from "@/components/sections/HorizontalJourney";
 import NeuroChipSection from "@/components/sections/NeuroChipSection";
 import EnterpriseGov from "@/components/sections/EnterpriseGov";
 import MentlearnSection from "@/components/sections/MentlearnSection";
-import GlobalSection from "@/components/sections/GlobalSection";
 import FinaleSection from "@/components/sections/FinaleSection";
 
 export default function Home() {
@@ -28,28 +27,25 @@ export default function Home() {
       <Navbar />
 
       <main className="relative min-h-screen bg-black text-[#F2F2F0] selection:bg-white/20 selection:text-white">
-        {/* Chapter 1: Hero & Refined Product Fan */}
+        {/* Intro: Hero & Flower-style Product Fan */}
         <Hero />
 
-        {/* Chapter 2: The Cognitive Shift (Word-by-word scroll-scrubbed) */}
+        {/* The Cognitive Shift (Word-by-word scroll-scrubbed) */}
         <TheShift />
 
-        {/* Chapter 3: Horizontal Pinned Journey (7 Flagship Products) */}
+        {/* Products: Product Fleet (Horizontal Pinned Journey) */}
         <HorizontalJourney />
 
-        {/* Chapter 4: Depth Section - Neuro HGI 2.2 mm Chip (Exploded 3D & Specs) */}
+        {/* Chip: Depth Section - Neuro HGI 2.2 mm Chip (Exploded 3D & Specs) */}
         <NeuroChipSection />
 
-        {/* Chapter 5: Enterprise & Government (Self-Drawing Security Boundary & Counters) */}
+        {/* Domains: Enterprise & Government (Self-Drawing Security Boundary) */}
         <EnterpriseGov />
 
-        {/* Chapter 6: Mentlearn Engineering Academy (Draggable Course Rail) */}
+        {/* Academy: Mentlearn Engineering Academy (Draggable Course Rail) */}
         <MentlearnSection />
 
-        {/* Chapter 7: Global Coordinates (Dotted World Map & Pulsing Hubs) */}
-        <GlobalSection />
-
-        {/* Chapter 8: Typographic Finale & Briefing Engagement */}
+        {/* Contact: Typographic Finale & Consultation */}
         <FinaleSection />
       </main>
     </SmoothScrollProvider>

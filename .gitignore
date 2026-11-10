@@ -28,6 +28,14 @@ yarn-error.log*
 # local env files
 .env*.local
 .env
+.env.*
+!.env.example
+
+# local databases and uploaded candidate resumes
+/data
+*.db
+*.sqlite
+*.sqlite3
 
 # vercel
 .vercel

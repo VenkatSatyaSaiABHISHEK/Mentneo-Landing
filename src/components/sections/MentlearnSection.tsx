@@ -29,7 +29,7 @@ export default function MentlearnSection() {
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#2F5BFF]/30 bg-[#2F5BFF]/[0.08] mb-4">
             <span className="w-1.5 h-1.5 rounded-full bg-[#2F5BFF]" />
             <span className="font-mono text-xs uppercase tracking-wideMono text-[#2F5BFF] font-semibold">
-              CHAPTER 06 · ENGINEERING ACADEMY
+              ACADEMY · ENGINEERING ACADEMY
             </span>
           </div>
           <h2 className="text-4xl sm:text-6xl font-light tracking-[-0.04em] text-[#0B0C0E]">

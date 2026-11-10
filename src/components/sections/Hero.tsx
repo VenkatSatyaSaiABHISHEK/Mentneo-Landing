@@ -1,28 +1,49 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useSmoothScroll } from "@/components/ui/SmoothScrollProvider";
-
-interface FanCardData {
-  id: string;
-  name: string;
-  category: string;
-  badge: string;
-  accent: string;
-  glowColor: string;
-  statLabel: string;
-  statValue: string;
-  renderVisual: () => React.ReactNode;
-}
+import { HERO_FAN_CARDS, HeroFanCard } from "@/data/products";
+import HeroCardVisual from "./HeroCardVisual";
 
 export default function Hero() {
   const { scrollTo } = useSmoothScroll();
   const containerRef = useRef<HTMLDivElement>(null);
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
-  const [isHovered, setIsHovered] = useState(false);
-  const [activeCard, setActiveCard] = useState<number | null>(null);
 
+  // Single shared active index for flower petal fan (0 to 6, default 3: Saadhyam)
+  const [activeIndex, setActiveIndex] = useState(3);
+  const [previewHover, setPreviewHover] = useState<number | null>(null);
+  const [isInteracting, setIsInteracting] = useState(false);
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+
+  // Drag tracking
+  const dragStartX = useRef<number | null>(null);
+
+  // Auto-play: Cycle active card every 4.5 seconds when idle
+  useEffect(() => {
+    if (isInteracting) return;
+    const interval = setInterval(() => {
+      setActiveIndex((prev) => (prev + 1) % HERO_FAN_CARDS.length);
+    }, 4500);
+    return () => clearInterval(interval);
+  }, [isInteracting]);
+
+  // Keyboard navigation (Left / Right arrows)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "ArrowRight") {
+        setActiveIndex((prev) => (prev + 1) % HERO_FAN_CARDS.length);
+        setIsInteracting(true);
+      } else if (e.key === "ArrowLeft") {
+        setActiveIndex((prev) => (prev - 1 + HERO_FAN_CARDS.length) % HERO_FAN_CARDS.length);
+        setIsInteracting(true);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
+  // Mouse Parallax for entire fan
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!containerRef.current) return;
     const rect = containerRef.current.getBoundingClientRect();
@@ -31,255 +52,94 @@ export default function Hero() {
     setMousePos({ x, y });
   };
 
-  const fanCards: FanCardData[] = [
-    {
-      id: "card-llm",
-      name: "Mentneo LLM",
-      category: "Foundation Architecture",
-      badge: "v3.4 MoE",
-      accent: "#7DA4D8",
-      glowColor: "rgba(125, 164, 216, 0.25)",
-      statLabel: "THROUGHPUT",
-      statValue: "318 tok/s",
-      renderVisual: () => (
-        <div className="w-full h-full flex flex-col justify-between p-4 bg-gradient-to-b from-[#0E1013] to-black">
-          <div className="flex items-center justify-between">
-            <span className="font-mono text-xs text-white/50 tracking-wideMono">
-              TENSOR_CORE_8X
-            </span>
-            <span className="w-2 h-2 rounded-full bg-[#7DA4D8] shadow-[0_0_8px_#7DA4D8]" />
-          </div>
-          {/* Simulated Tensor Heatmap / Attention Matrix */}
-          <div className="grid grid-cols-6 gap-1.5 my-3">
-            {Array.from({ length: 24 }).map((_, i) => (
-              <div
-                key={i}
-                className="h-3.5 rounded-sm transition-opacity duration-700"
-                style={{
-                  backgroundColor: "#7DA4D8",
-                  opacity: 0.15 + ((i * 7) % 85) / 100,
-                }}
-              />
-            ))}
-          </div>
-          <div className="flex justify-between items-end border-t border-white/10 pt-2.5 font-mono text-xs">
-            <span className="text-white/40">CONTEXT</span>
-            <span className="text-white/95 font-medium">1.2M Tokens</span>
-          </div>
-        </div>
-      ),
-    },
-    {
-      id: "card-voice",
-      name: "Mentneo Voice",
-      category: "Acoustic DSP Physics",
-      badge: "118ms E2E",
-      accent: "#2F5BFF",
-      glowColor: "rgba(47, 91, 255, 0.3)",
-      statLabel: "LATENCY",
-      statValue: "118 ms",
-      renderVisual: () => (
-        <div className="w-full h-full flex flex-col justify-between p-4 bg-gradient-to-b from-[#0E1013] to-black">
-          <div className="flex items-center justify-between">
-            <span className="font-mono text-xs text-white/50 tracking-wideMono">
-              BINAURAL_DSP
-            </span>
-            <span className="font-mono text-[10px] text-white px-1.5 py-0.5 rounded bg-[#2F5BFF]/30 border border-[#2F5BFF]/40 font-semibold">
-              48kHz / 24-BIT
-            </span>
-          </div>
-          {/* Live Waveform Bars */}
-          <div className="flex items-center justify-center gap-1.5 h-14 my-2">
-            {[20, 48, 85, 32, 95, 65, 40, 75, 100, 55, 30, 80, 45, 90, 60, 25].map(
-              (h, i) => (
-                <div
-                  key={i}
-                  className="w-1.5 rounded-full bg-gradient-to-t from-[#2F5BFF]/20 to-[#2F5BFF]"
-                  style={{ height: `${h}%` }}
-                />
-              )
-            )}
-          </div>
-          <div className="flex justify-between items-end border-t border-white/10 pt-2.5 font-mono text-xs">
-            <span className="text-white/40">DUPLEX</span>
-            <span className="text-white/95 font-medium">Sub-42ms Interrupt</span>
-          </div>
-        </div>
-      ),
-    },
-    {
-      id: "card-chip",
-      name: "Neuro HGI Chip",
-      category: "Neuromorphic Silicon",
-      badge: "2.2 mm Die",
-      accent: "#E8A23B",
-      glowColor: "rgba(232, 162, 59, 0.3)",
-      statLabel: "POWER BUDGET",
-      statValue: "0.8 W",
-      renderVisual: () => (
-        <div className="w-full h-full flex flex-col justify-between p-4 bg-gradient-to-b from-[#14120E] to-black">
-          <div className="flex items-center justify-between">
-            <span className="font-mono text-xs text-white/50 tracking-wideMono">
-              SILICON_ARCH
-            </span>
-            <span className="font-mono text-[10px] text-[#E8A23B] px-1.5 py-0.5 rounded bg-[#E8A23B]/10 border border-[#E8A23B]/30 font-semibold">
-              SUB-MILLIWATT
-            </span>
-          </div>
-          {/* Micro-Die Schematic */}
-          <div className="relative w-22 h-22 mx-auto border border-[#E8A23B]/40 rounded-sm bg-[#E8A23B]/[0.03] flex items-center justify-center">
-            <div className="w-14 h-14 border border-[#E8A23B]/60 rounded-sm flex items-center justify-center">
-              <span className="font-mono text-xs text-[#E8A23B] font-bold">HGI 2.2</span>
-            </div>
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(232,162,59,0.18),transparent_70%)]" />
-          </div>
-          <div className="flex justify-between items-end border-t border-white/10 pt-2.5 font-mono text-xs">
-            <span className="text-white/40">DIE SCALE</span>
-            <span className="text-[#E8A23B] font-semibold">2.2 × 2.2 mm</span>
-          </div>
-        </div>
-      ),
-    },
-    {
-      id: "card-saadhyam",
-      name: "Saadhyam",
-      category: "Autonomous Calling",
-      badge: "100k Concurrency",
-      accent: "#8EA0B8",
-      glowColor: "rgba(142, 160, 184, 0.25)",
-      statLabel: "CALL ACCURACY",
-      statValue: "88.7%",
-      renderVisual: () => (
-        <div className="w-full h-full flex flex-col justify-between p-4 bg-gradient-to-b from-[#101216] to-black">
-          <div className="flex items-center justify-between">
-            <span className="font-mono text-xs text-white/50 tracking-wideMono">
-              SIP_TRUNK_LIVE
-            </span>
-            <span className="w-2 h-2 rounded-full bg-[#2F5BFF] animate-ping" />
-          </div>
-          {/* Real-time Call Telemetry Stream */}
-          <div className="space-y-1.5 my-2.5 font-mono text-[11px]">
-            <div className="p-2 rounded bg-white/[0.03] border border-white/10 flex justify-between">
-              <span className="text-white/40">ACTIVE LINES</span>
-              <span className="text-white font-medium">100,420</span>
-            </div>
-            <div className="p-2 rounded bg-white/[0.03] border border-white/10 flex justify-between">
-              <span className="text-white/40">SENTIMENT</span>
-              <span className="text-[#2F5BFF] font-semibold">94.2% Positive</span>
-            </div>
-          </div>
-          <div className="flex justify-between items-end border-t border-white/10 pt-2.5 font-mono text-xs">
-            <span className="text-white/40">CRM SYNC</span>
-            <span className="text-white/95 font-medium">&lt; 180ms Latency</span>
-          </div>
-        </div>
-      ),
-    },
-    {
-      id: "card-rag",
-      name: "Mentneo Search",
-      category: "Deterministic RAG",
-      badge: "10B+ Vectors",
-      accent: "#7EB8A2",
-      glowColor: "rgba(126, 184, 162, 0.25)",
-      statLabel: "P99 RETRIEVAL",
-      statValue: "4.8 ms",
-      renderVisual: () => (
-        <div className="w-full h-full flex flex-col justify-between p-4 bg-gradient-to-b from-[#09110D] to-black">
-          <div className="flex items-center justify-between">
-            <span className="font-mono text-xs text-white/50 tracking-wideMono">
-              HNSW_SPARSE_DENSE
-            </span>
-            <span className="font-mono text-[10px] text-[#7EB8A2] px-1.5 py-0.5 rounded bg-[#7EB8A2]/10 border border-[#7EB8A2]/30 font-semibold">
-              SIMD AVX
-            </span>
-          </div>
-          {/* High Dimensional Node Graph */}
-          <div className="relative h-18 my-2 border border-[#7EB8A2]/20 rounded bg-[#7EB8A2]/[0.02] p-2 flex items-center justify-around">
-            <div className="w-2 h-2 rounded-full bg-[#7EB8A2]" />
-            <div className="h-[1px] w-12 bg-gradient-to-r from-[#7EB8A2] to-white/40" />
-            <div className="w-2.5 h-2.5 rounded-full bg-white shadow-[0_0_8px_#fff]" />
-            <div className="h-[1px] w-8 bg-gradient-to-r from-white/40 to-[#7EB8A2]" />
-            <div className="w-2 h-2 rounded-full bg-[#7EB8A2]/60" />
-          </div>
-          <div className="flex justify-between items-end border-t border-white/10 pt-2.5 font-mono text-xs">
-            <span className="text-white/40">GROUNDING</span>
-            <span className="text-[#7EB8A2] font-semibold">100% Exact Citation</span>
-          </div>
-        </div>
-      ),
-    },
-  ];
+  const handleCardClick = (idx: number, card: HeroFanCard) => {
+    if (idx !== activeIndex) {
+      // Click a neighbour petal to lock and bloom it
+      setActiveIndex(idx);
+      setIsInteracting(true);
+      return;
+    }
 
-  // Resting fan angles: -18, -9, 0, 9, 18
-  const baseRotations = [-18, -9, 0, 9, 18];
-  const baseOffsets = [-160, -80, 0, 80, 160];
+    // Clicking the already active front card navigates to explore it
+    if (typeof window !== "undefined") {
+      const jump = (window as unknown as Record<string, unknown>).__jumpToScene as
+        | ((idx: number) => void)
+        | undefined;
+      if (card.sceneIndex !== undefined && jump) {
+        jump(card.sceneIndex);
+        return;
+      }
+    }
+    scrollTo(card.href);
+  };
+
+  // Drag / Swipe handling
+  const handlePointerDown = (e: React.PointerEvent) => {
+    dragStartX.current = e.clientX;
+    setIsInteracting(true);
+  };
+
+  const handlePointerUp = (e: React.PointerEvent) => {
+    if (dragStartX.current === null) return;
+    const deltaX = e.clientX - dragStartX.current;
+    if (Math.abs(deltaX) > 40) {
+      if (deltaX < 0) {
+        // Swiped left -> advance
+        setActiveIndex((prev) => (prev + 1) % HERO_FAN_CARDS.length);
+      } else {
+        // Swiped right -> previous
+        setActiveIndex((prev) => (prev - 1 + HERO_FAN_CARDS.length) % HERO_FAN_CARDS.length);
+      }
+    }
+    dragStartX.current = null;
+  };
+
+  const activeCardData = HERO_FAN_CARDS[activeIndex];
 
   return (
     <section
       id="chapter-1"
       ref={containerRef}
       onMouseMove={handleMouseMove}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => {
-        setIsHovered(false);
-        setMousePos({ x: 0, y: 0 });
-        setActiveCard(null);
-      }}
-      className="relative min-h-screen bg-black pt-32 pb-24 px-6 flex flex-col items-center justify-between overflow-hidden select-none"
+      className="relative min-h-screen bg-black pt-28 pb-16 px-4 sm:px-6 flex flex-col items-center justify-between overflow-hidden select-none"
     >
       {/* Background Micro Grain & Vignette */}
       <div className="absolute inset-0 bg-grain pointer-events-none" />
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_40%,rgba(255,255,255,0.035)_0%,transparent_70%)] pointer-events-none" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_35%,rgba(255,255,255,0.035)_0%,transparent_70%)] pointer-events-none" />
 
-      {/* Top Tagline & Headline */}
-      <div className="relative z-10 max-w-4xl mx-auto text-center mt-6">
-        {/* Sovereign R&D Tag */}
-        <motion.div
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/10 bg-white/[0.02] mb-6 backdrop-blur-sm"
-        >
-          <span className="w-1.5 h-1.5 rounded-full bg-[#2F5BFF]" />
-          <span className="font-mono text-xs uppercase tracking-wideMono text-white/70">
-            HYDERABAD · KAKINADA · SAN FRANCISCO · LONDON
-          </span>
-        </motion.div>
-
-        {/* Big Bold Architectural Headline */}
+      {/* Top Headline & Value Proposition */}
+      <div className="relative z-10 max-w-4xl mx-auto text-center mt-2">
         <motion.h1
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 18 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.1 }}
+          transition={{ duration: 0.7 }}
           className="text-5xl sm:text-7xl lg:text-8xl font-normal tracking-[-0.04em] text-[#F2F2F0] leading-[0.95]"
         >
           Intelligence, <br />
           <span className="text-white/60">engineered.</span>
         </motion.h1>
 
-        {/* Precise Technical Subtitle */}
         <motion.p
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.2 }}
-          className="mt-6 text-base sm:text-lg text-[#8A8F98] max-w-2xl mx-auto font-normal leading-relaxed tracking-tight"
+          transition={{ duration: 0.7, delay: 0.15 }}
+          className="mt-5 text-sm sm:text-base lg:text-lg text-[#8A8F98] max-w-2xl mx-auto font-normal leading-relaxed tracking-tight"
         >
-          Mentneo designs frontier foundation models, deterministic reasoning graphs,
-          sub-120ms acoustic voice physics, and the upcoming 2.2&nbsp;mm Neuro HGI silicon.
-          Built for enterprises and sovereigns where probabilistic hallucinations are unacceptable.
+          Mentneo designs frontier foundation models, real-time voice intelligence,
+          autonomous AI workforces, and the upcoming 2.2&nbsp;mm Neuro HGI silicon.
+          Built for enterprises where probabilistic hallucinations are unacceptable.
         </motion.p>
 
         {/* Action CTAs */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.3 }}
-          className="mt-8 flex flex-wrap items-center justify-center gap-4"
+          transition={{ duration: 0.7, delay: 0.25 }}
+          className="mt-6 flex flex-wrap items-center justify-center gap-3.5"
         >
           <button
             onClick={() => scrollTo("#chapter-3")}
-            className="px-6 py-3 rounded-full bg-white text-black text-xs font-semibold tracking-tight hover:bg-[#F2F2F0] transition-colors shadow-[0_0_30px_rgba(255,255,255,0.2)]"
+            className="px-5 py-2.5 rounded-full bg-white text-black text-xs font-semibold tracking-tight hover:bg-[#F2F2F0] transition-colors shadow-[0_0_30px_rgba(255,255,255,0.2)]"
             data-cursor
             data-cursor-label="EXPLORE"
           >
@@ -287,7 +147,7 @@ export default function Hero() {
           </button>
           <button
             onClick={() => scrollTo("#chapter-4")}
-            className="px-6 py-3 rounded-full border border-white/20 bg-white/[0.03] text-xs font-semibold tracking-tight text-white hover:bg-white/10 transition-colors flex items-center gap-2"
+            className="px-5 py-2.5 rounded-full border border-white/20 bg-white/[0.03] text-xs font-semibold tracking-tight text-white hover:bg-white/10 transition-colors flex items-center gap-2"
             data-cursor
             data-cursor-label="CHIP"
           >
@@ -297,100 +157,197 @@ export default function Hero() {
         </motion.div>
       </div>
 
-      {/* REFINED FAN OF PRODUCT CARDS (Mouse parallax, 3D tilt max 6deg, separates & straightens on hover) */}
-      <div className="relative z-10 w-full max-w-5xl h-[380px] sm:h-[430px] mt-12 flex items-center justify-center">
-        <div className="relative w-full h-full flex items-center justify-center">
-          {fanCards.map((card, idx) => {
-            const isCardActive = activeCard === idx;
-            const spreadMultiplier = isHovered ? 1.5 : 1.0;
-            const targetX = baseOffsets[idx] * spreadMultiplier + mousePos.x * 25;
-            const targetY = isHovered
-              ? Math.abs(idx - 2) * 8 + mousePos.y * 15
-              : Math.abs(idx - 2) * 16 + mousePos.y * 12;
-            const targetRotate = isHovered
-              ? baseRotations[idx] * 0.2 + mousePos.x * 4 // Max 6 deg tilt
-              : baseRotations[idx];
+      {/* FLOWER-STYLE CARD FAN:
+          All 7 cards act as petals around a central stem/pivot point.
+          Single shared active index drives synchronized spring motion.
+          Cards are reduced to ~55-60% size (250px × 360px), fitting comfortably in viewport. */}
+      <div
+        className="relative z-10 w-full max-w-6xl h-[400px] sm:h-[420px] mt-6 flex items-center justify-center touch-pan-y"
+        onMouseEnter={() => setIsInteracting(true)}
+        onMouseLeave={() => {
+          setIsInteracting(false);
+          setPreviewHover(null);
+        }}
+        onPointerDown={handlePointerDown}
+        onPointerUp={handlePointerUp}
+      >
+        {/* Soft Radial Ambient Accent Glow Behind the Blooming Front Card Only */}
+        <motion.div
+          animate={{
+            backgroundColor: activeCardData.accent,
+            opacity: 0.28,
+            scale: [0.95, 1.05, 0.95],
+          }}
+          transition={{
+            backgroundColor: { duration: 0.5 },
+            opacity: { duration: 0.5 },
+            scale: { duration: 4, repeat: Infinity, ease: "easeInOut" },
+          }}
+          className="absolute w-[340px] h-[340px] rounded-full blur-[80px] pointer-events-none"
+        />
+
+        {/* Parallax Container shifting entire flower slightly with mouse */}
+        <motion.div
+          animate={{
+            x: mousePos.x * 20,
+            y: mousePos.y * 12,
+            rotateY: mousePos.x * 3.5,
+            rotateX: -mousePos.y * 2.5,
+          }}
+          transition={{ type: "spring", stiffness: 80, damping: 25 }}
+          className="relative w-full h-full flex items-center justify-center perspective-[1200px]"
+        >
+          {HERO_FAN_CARDS.map((card, idx) => {
+            // Compute wrapped shortest distance from activeIndex: range [-3, 3]
+            let diff = idx - activeIndex;
+            if (diff > 3) diff -= 7;
+            if (diff < -3) diff += 7;
+
+            const absDiff = Math.abs(diff);
+            const isBloom = absDiff === 0;
+            const isHoveredPreview = previewHover === idx && !isBloom;
+
+            // Layout Parameters (Radial Petal Fan):
+            // - Symmetrical rotation: ±7.5°, ±15°, ±22.5°
+            const targetRotate = diff * 7.5;
+
+            // - Symmetrical scale down: 1.0, 0.92, 0.85, 0.78
+            const baseScale = isBloom ? 1.0 : absDiff === 1 ? 0.92 : absDiff === 2 ? 0.85 : 0.78;
+            const targetScale = isHoveredPreview ? baseScale + 0.04 : baseScale;
+
+            // - Symmetrical drop in Y (front card rises to bloom: -18px, neighbours drop down)
+            const baseY = isBloom ? -18 : absDiff === 1 ? 14 : absDiff === 2 ? 34 : 54;
+            const targetY = isHoveredPreview ? baseY - 10 : baseY;
+
+            // - Symmetrical horizontal spacing with parting to give bloom room
+            const parting = diff > 0 ? 18 : diff < 0 ? -18 : 0;
+            const targetX = diff * 92 + parting;
+
+            // - Z-index hierarchy
+            const targetZ = isBloom ? 35 : isHoveredPreview ? 25 : 20 - absDiff * 5;
+
+            // - Dimming & soft blur for background petals
+            const targetOpacity = isBloom ? 1.0 : isHoveredPreview ? 0.95 : absDiff === 1 ? 0.88 : absDiff === 2 ? 0.70 : 0.52;
+            const targetBlur = isBloom ? 0 : isHoveredPreview ? 0.5 : absDiff === 1 ? 0.5 : absDiff === 2 ? 1.8 : 2.8;
 
             return (
               <motion.div
                 key={card.id}
-                onMouseEnter={() => setActiveCard(idx)}
-                onMouseLeave={() => setActiveCard(null)}
-                onClick={() => scrollTo("#chapter-3")}
+                onMouseEnter={() => setPreviewHover(idx)}
+                onMouseLeave={() => setPreviewHover(null)}
+                onClick={() => handleCardClick(idx, card)}
                 animate={{
                   x: targetX,
-                  y: isCardActive ? targetY - 30 : targetY,
-                  rotate: isCardActive ? 0 : targetRotate,
-                  scale: isCardActive ? 1.08 : isHovered ? 1.02 : 0.98,
-                  zIndex: isCardActive ? 30 : idx === 2 ? 15 : idx,
+                  y: targetY,
+                  rotate: targetRotate,
+                  scale: targetScale,
+                  zIndex: targetZ,
+                  opacity: targetOpacity,
+                  filter: `blur(${targetBlur}px)`,
                 }}
                 transition={{
                   type: "spring",
-                  stiffness: 240,
-                  damping: 24,
-                  mass: 0.8,
+                  stiffness: 120,
+                  damping: 20,
+                  mass: 0.9,
                 }}
                 style={{
-                  transformOrigin: "bottom center",
-                  boxShadow: isCardActive
-                    ? `0 25px 50px -10px rgba(0,0,0,0.9), 0 0 50px -5px ${card.glowColor}, inset 0 1px 0 rgba(255,255,255,0.2)`
-                    : "0 20px 40px -15px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.08)",
+                  transformOrigin: "center 680px",
+                  boxShadow: isBloom
+                    ? `0 25px 60px -12px rgba(0,0,0,0.95), 0 0 45px -8px ${card.glowColor}, inset 0 1px 0 rgba(255,255,255,0.22)`
+                    : "0 18px 36px -12px rgba(0,0,0,0.85), inset 0 1px 0 rgba(255,255,255,0.08)",
                 }}
-                className="absolute w-[250px] sm:w-[280px] h-[335px] sm:h-[370px] rounded-2xl border border-white/10 border-t-white/25 border-l-white/20 bg-[#0A0C0F] overflow-hidden cursor-pointer transition-colors duration-300 group"
+                className={`absolute w-[240px] sm:w-[255px] lg:w-[265px] h-[340px] sm:h-[360px] rounded-[22px] border ${
+                  isBloom ? "border-white/25" : "border-white/10"
+                } bg-gradient-to-b from-[#12141B]/95 via-[#0C0D12]/95 to-[#07080B]/98 backdrop-blur-xl overflow-hidden cursor-pointer flex flex-col justify-between p-4 sm:p-5 transition-[border-color,box-shadow] duration-300 group`}
                 data-cursor
-                data-cursor-label="INSPECT"
+                data-cursor-label={isBloom ? "EXPLORE" : "VIEW"}
               >
-                {/* Top specular hairline according to card accent */}
+                {/* Top Accent Hairline */}
                 <div
                   className="absolute top-0 left-0 right-0 h-[2px] transition-opacity duration-300"
                   style={{
                     backgroundColor: card.accent,
-                    opacity: isCardActive ? 1 : 0.45,
+                    opacity: isBloom ? 1 : 0.4,
                   }}
                 />
 
-                {/* Card Header */}
-                <div className="p-4 border-b border-white/[0.08] flex items-center justify-between bg-white/[0.015]">
-                  <div>
-                    <h3 className="text-sm font-semibold text-white tracking-tight">
-                      {card.name}
-                    </h3>
-                    <p className="font-mono text-[10px] uppercase tracking-wideMono text-white/50 mt-0.5">
-                      {card.category}
-                    </p>
+                {/* Subtle Grain Overlay */}
+                <div
+                  className="absolute inset-0 pointer-events-none opacity-[0.03] mix-blend-overlay"
+                  style={{
+                    backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
+                  }}
+                />
+
+                {/* Card Header: Domain Tag + Large Product Name + Plain-English Promise */}
+                <div className="relative z-10">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] sm:text-[12px] font-mono text-white/50 tracking-wider uppercase">
+                      {card.label}
+                    </span>
+                    <span
+                      className="w-1.5 h-1.5 rounded-full transition-transform duration-300 group-hover:scale-125"
+                      style={{ backgroundColor: card.accent }}
+                    />
                   </div>
-                  <span className="font-mono text-[10px] px-2 py-0.5 rounded-full border border-white/15 bg-white/[0.05] text-white/80 font-medium">
-                    {card.badge}
-                  </span>
+
+                  <h3 className="text-[20px] sm:text-[22px] font-medium text-white tracking-tight leading-[1.15] mt-1.5">
+                    {card.name}
+                  </h3>
+
+                  <p className="text-[13px] sm:text-[13.5px] text-[#A1A1AA] leading-snug mt-1 line-clamp-2">
+                    {card.promise}
+                  </p>
                 </div>
 
-                {/* Interactive Product Visual Component */}
-                <div className="h-[210px] sm:h-[240px]">
-                  {card.renderVisual()}
+                {/* Card Visual Center */}
+                <div className="relative z-10 flex-1 my-2 flex items-center justify-center overflow-hidden rounded-xl bg-white/[0.015] border border-white/[0.04]">
+                  <HeroCardVisual type={card.visualType} accent={card.accent} />
                 </div>
 
-                {/* Card Footer Metric */}
-                <div className="p-3.5 border-t border-white/[0.08] flex items-center justify-between bg-black/50">
-                  <span className="font-mono text-[10px] uppercase tracking-wideMono text-white/50">
-                    {card.statLabel}
+                {/* Card Footer: Subtle Explore Action */}
+                <div className="relative z-10 pt-2 border-t border-white/[0.08] flex items-center justify-between text-xs">
+                  <span className="text-[11px] text-white/45">
+                    {isBloom ? "Click to explore" : "Click to view"}
                   </span>
                   <span
-                    className="font-mono text-sm font-bold tracking-tight"
+                    className="text-xs font-semibold tracking-tight inline-flex items-center gap-1 transition-transform group-hover:translate-x-1"
                     style={{ color: card.accent }}
                   >
-                    {card.statValue}
+                    <span>→</span>
                   </span>
                 </div>
               </motion.div>
             );
           })}
-        </div>
+        </motion.div>
       </div>
 
-      {/* Hero Footnote Indicator */}
-      <div className="relative z-10 mt-8 flex items-center gap-3 font-mono text-xs text-white/40 tracking-wideMono uppercase">
-        <span>SCROLL TO BEGIN COGNITIVE TRANSITION</span>
-        <span className="animate-bounce">↓</span>
+      {/* 7-Dot Flower Index Indicator Bar (follows active index) */}
+      <div className="relative z-10 mt-4 flex flex-col items-center gap-2">
+        <div className="flex items-center gap-1.5 p-1 rounded-full bg-white/[0.03] border border-white/10 backdrop-blur-md">
+          {HERO_FAN_CARDS.map((card, idx) => {
+            const isActive = idx === activeIndex;
+            return (
+              <button
+                key={card.id}
+                onClick={() => {
+                  setActiveIndex(idx);
+                  setIsInteracting(true);
+                }}
+                aria-label={`Select ${card.name}`}
+                data-cursor
+                data-cursor-label={card.name}
+                className={`transition-all duration-300 rounded-full ${
+                  isActive
+                    ? "w-6 h-1.5 bg-white shadow-[0_0_10px_rgba(255,255,255,0.6)]"
+                    : "w-1.5 h-1.5 bg-white/25 hover:bg-white/50"
+                }`}
+              />
+            );
+          })}
+        </div>
       </div>
     </section>
   );

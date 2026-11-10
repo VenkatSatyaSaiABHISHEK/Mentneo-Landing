@@ -17,7 +17,12 @@ const geistMono = localFont({
 export const metadata: Metadata = {
   title: "Mentneo — Intelligence, Engineered",
   description:
-    "Mentneo is an AI research & development laboratory building frontier foundation models, real-time voice intelligence, autonomous agent swarms, and the 2.2 mm Neuro HGI silicon architecture. Founded 2025 across Hyderabad, Kakinada, US, and UK.",
+    "Mentneo is an AI research & development laboratory building frontier foundation models, real-time voice intelligence, autonomous agent swarms, and the 2.2 mm Neuro HGI silicon architecture.",
+  icons: {
+    icon: "/favicon.svg",
+    shortcut: "/favicon.svg",
+    apple: "/favicon.svg",
+  },
   keywords: [
     "Mentneo",
     "Mentneo LLM",

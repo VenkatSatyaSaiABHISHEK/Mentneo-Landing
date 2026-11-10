@@ -48,6 +48,9 @@ export default function SmoothScrollProvider({
     });
 
     setLenisInstance(lenis);
+    if (typeof window !== "undefined") {
+      (window as unknown as Record<string, unknown>).__lenis = lenis;
+    }
 
     // Synchronize Lenis scroll position with GSAP ScrollTrigger
     lenis.on("scroll", ScrollTrigger.update);

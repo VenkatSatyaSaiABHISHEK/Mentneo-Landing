@@ -55,7 +55,7 @@ export default function NeuroChipSection() {
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#F59E0B]/30 bg-[#F59E0B]/[0.05] mb-4">
           <span className="w-1.5 h-1.5 rounded-full bg-[#F59E0B] animate-pulse" />
           <span className="font-mono text-[11px] uppercase tracking-wideMono text-[#F59E0B]">
-            CHAPTER 04 · HARDWARE FOUNDRY
+            CHIP · HARDWARE FOUNDRY
           </span>
         </div>
 

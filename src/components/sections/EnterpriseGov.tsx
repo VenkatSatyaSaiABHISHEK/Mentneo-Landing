@@ -1,18 +1,12 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 export default function EnterpriseGov() {
   const sectionRef = useRef<HTMLDivElement>(null);
   const diagramRef = useRef<SVGSVGElement>(null);
-  const [counts, setCounts] = useState({
-    uptime: 0,
-    egress: 0,
-    queries: 0,
-    latency: 0,
-  });
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -22,12 +16,11 @@ export default function EnterpriseGov() {
     const diagram = diagramRef.current;
     if (!section) return;
 
-    // Trigger path drawing and counter count-up when section enters view
+    // Trigger perimeter drawing when section enters view
     const st = ScrollTrigger.create({
       trigger: section,
       start: "top 65%",
       onEnter: () => {
-        // Animate SVG perimeter path
         if (diagram) {
           const boundaryPath = diagram.querySelector(".enclave-path");
           if (boundaryPath) {
@@ -38,24 +31,6 @@ export default function EnterpriseGov() {
             );
           }
         }
-
-        // Animate Telemetry Counters
-        gsap.to(
-          {},
-          {
-            duration: 2.0,
-            ease: "power2.out",
-            onUpdate: function () {
-              const p = this.progress();
-              setCounts({
-                uptime: +(p * 99.999).toFixed(3),
-                egress: 0,
-                queries: Math.floor(p * 42),
-                latency: Math.floor((1 - p) * 120 + 38),
-              });
-            },
-          }
-        );
       },
     });
 
@@ -78,7 +53,7 @@ export default function EnterpriseGov() {
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#2F5BFF]/30 bg-[#2F5BFF]/[0.08] mb-4">
           <span className="w-1.5 h-1.5 rounded-full bg-[#2F5BFF]" />
           <span className="font-mono text-xs uppercase tracking-wideMono text-[#2F5BFF] font-semibold">
-            CHAPTER 05 · SOVEREIGN ARCHITECTURE
+            DOMAINS · SOVEREIGN ARCHITECTURE
           </span>
         </div>
 
@@ -128,10 +103,10 @@ export default function EnterpriseGov() {
               EXTERNAL INTAKE
             </text>
             <text x="130" y="140" textAnchor="middle" fill="#0B0C0E" fontSize="13" fontWeight="500" fontFamily="sans-serif">
-              Citizen Queries
+              Citizen Inquiries
             </text>
             <text x="130" y="170" textAnchor="middle" fill="#0B0C0E" fontSize="13" fontWeight="500" fontFamily="sans-serif">
-              Public Land Records
+              Public Sector Records
             </text>
             <text x="130" y="200" textAnchor="middle" fill="#0B0C0E" fontSize="13" fontWeight="500" fontFamily="sans-serif">
               Enterprise Invoices
@@ -203,68 +178,26 @@ export default function EnterpriseGov() {
                 SECURITY BARRIER
               </text>
               <text x="265" y="168" fill="#2F5BFF" fontSize="13" fontWeight="700" fontFamily="sans-serif">
-                Zero Cloud Egress: 0 Bytes
+                Hardware Attested Enclave
               </text>
               <text x="265" y="190" fill="#4A4E57" fontSize="11" fontFamily="sans-serif">
-                Cryptographic hardware attestation
+                Complete isolation with zero external transmit
               </text>
             </g>
           </svg>
         </div>
 
-        {/* Real-time Sovereign Audit Badge */}
+        {/* Plain Security Statement (No Numbers) */}
         <div className="flex flex-wrap items-center justify-between pt-3 border-t border-[#E9E7E1] font-mono text-xs text-[#737883]">
-          <span>PHYSICAL LAYER: AIR-GAPPED DARK FIBER ONLY</span>
-          <span className="text-[#2F5BFF] font-semibold">EGRESS TRAFFIC AUDIT: BLOCKED (0.00KB/S)</span>
+          <span>PHYSICAL LAYER: AIR-GAPPED HARDWARE ATTESTED</span>
+          <span className="text-[#2F5BFF] font-semibold">STRICT LOCAL PERIMETER CONTROL</span>
         </div>
       </div>
 
-      {/* 4 Animated Live Telemetry Counters in Crisp Paper White Cards */}
-      <div className="relative z-10 w-full max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
-        {/* Counter 1 */}
-        <div className="p-5 rounded-xl border border-[#E9E7E1] bg-white shadow-sm text-center">
-          <span className="font-mono text-xs text-[#737883] uppercase tracking-wideMono block mb-1">
-            AIR-GAPPED UPTIME
-          </span>
-          <span className="font-mono text-2xl sm:text-3xl font-bold text-[#0B0C0E] block">
-            {counts.uptime}%
-          </span>
-          <span className="text-xs text-[#4A4E57] mt-1 block">Tier-4 Sovereign Spec</span>
-        </div>
-
-        {/* Counter 2 */}
-        <div className="p-5 rounded-xl border border-[#E9E7E1] bg-white shadow-sm text-center">
-          <span className="font-mono text-xs text-[#737883] uppercase tracking-wideMono block mb-1">
-            OFF-PREMISE EGRESS
-          </span>
-          <span className="font-mono text-2xl sm:text-3xl font-bold text-[#2F5BFF] block">
-            {counts.egress} BYTES
-          </span>
-          <span className="text-xs text-[#4A4E57] mt-1 block">Zero External Transmit</span>
-        </div>
-
-        {/* Counter 3 */}
-        <div className="p-5 rounded-xl border border-[#E9E7E1] bg-white shadow-sm text-center">
-          <span className="font-mono text-xs text-[#737883] uppercase tracking-wideMono block mb-1">
-            CITIZEN QUERIES SERVED
-          </span>
-          <span className="font-mono text-2xl sm:text-3xl font-bold text-[#0B0C0E] block">
-            {counts.queries}M+
-          </span>
-          <span className="text-xs text-[#4A4E57] mt-1 block">State &amp; Municipal Depts</span>
-        </div>
-
-        {/* Counter 4 */}
-        <div className="p-5 rounded-xl border border-[#E9E7E1] bg-white shadow-sm text-center">
-          <span className="font-mono text-xs text-[#737883] uppercase tracking-wideMono block mb-1">
-            ON-PREM DOC PARSE
-          </span>
-          <span className="font-mono text-2xl sm:text-3xl font-bold text-[#2F5BFF] block">
-            &lt; {counts.latency} ms
-          </span>
-          <span className="text-xs text-[#4A4E57] mt-1 block">SIMD Native Ingestion</span>
-        </div>
-      </div>
+      {/* Short Plain Security Line */}
+      <p className="relative z-10 text-xs font-mono text-[#737883] tracking-wide text-center mt-2 max-w-xl mx-auto">
+        Hardware-isolated sovereign execution with strict local perimeter control and verifiable zero-telemetry boundaries.
+      </p>
     </section>
   );
 }

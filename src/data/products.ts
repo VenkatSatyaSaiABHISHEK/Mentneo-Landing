@@ -1,206 +1,376 @@
 export interface ProductMetric {
   label: string;
   value: string;
-  detail: string;
+  detail?: string;
+}
+
+export type ProductGroup = "Intelligence" | "AI Humans" | "Silicon";
+
+export type VisualType =
+  | "aiml"
+  | "deeplearning"
+  | "saadhyam"
+  | "ai_human_sara"
+  | "ai_human_diya"
+  | "ai_human_valmiki"
+  | "ai_human_rudra"
+  | "ai_human_law"
+  | "neuro_chip";
+
+export interface HumanProfile {
+  role: string;
+  speakingStatus: string;
+  initials: string;
 }
 
 export interface ProductItem {
   id: string;
   index: string;
+  group: ProductGroup;
   name: string;
   tagline: string;
-  category: string;
-  headline: string;
-  description: string;
+  promise: string;
+  highlights: string[];
+  metrics: ProductMetric[];
   accent: string;
   bgShade: string;
-  metrics: ProductMetric[];
-  status: string;
-  interactiveType:
-    | "tensor"
-    | "chat_reasoning"
-    | "dsp_waveform"
-    | "rag_vector"
-    | "studio_timeline"
-    | "agent_dag"
-    | "saadhyam_telemetry";
-  specs: { label: string; value: string }[];
+  visualType: VisualType;
+  humanProfile?: HumanProfile;
 }
 
 export const PRODUCTS: ProductItem[] = [
+  // ─── Group A: Intelligence ──────────────────────────────────────────
   {
-    id: "mentneo-llm",
+    id: "ai-ml-solutions",
     index: "01",
-    name: "Mentneo LLM",
-    tagline: "Frontier Foundation Architecture",
-    category: "Foundation Models",
-    headline: "Deterministic reasoning at tensor scale.",
-    description:
-      "A dense-sparse hybrid transformer trained from ground zero on sovereign corpus. Features dynamic speculative decoding, formal logic verification gates, and native multi-modal tensor kernels designed for zero-hallucination enterprise synthesis.",
-    accent: "#7DA4D8", // Refined Ice Slate
-    bgShade: "#07080A",
-    status: "v3.4 Production Ready",
+    group: "Intelligence",
+    name: "AI / ML Solutions",
+    tagline: "Applied Enterprise Models",
+    promise: "Applied machine learning built for real business problems.",
+    highlights: [
+      "Custom predictive scoring, forecasting, and causal inference engines",
+      "Continuous model retraining pipelines anchored to sovereign data streams",
+      "Sub-millisecond inference embedded directly into operational software",
+    ],
     metrics: [
-      { label: "Token Throughput", value: "318 tok/s", detail: "On H100 SXM5 8-way" },
-      { label: "Context Window", value: "1.2M tokens", detail: "Linear memory scaling" },
-      { label: "Hallucination Delta", value: "< 0.08%", detail: "Benchmarked on FactTruth" },
+      { label: "Accuracy lift", value: "+38%" },
+      { label: "P99 latency", value: "3.2 ms" },
+      { label: "Data sovereignty", value: "100%" },
     ],
-    interactiveType: "tensor",
-    specs: [
-      { label: "Architecture", value: "MoE 128E / 16A active" },
-      { label: "Precision", value: "FP8 / INT4 Hybrid Quant" },
-      { label: "Inference Latency", value: "11.2ms TTFT" },
-      { label: "Alignment", value: "Direct Preference DPO + RLAIF" },
-    ],
+    accent: "#7EA4D4", // Refined ice slate
+    bgShade: "#08090C",
+    visualType: "aiml",
   },
   {
-    id: "mentneo-chat",
+    id: "deep-learning",
     index: "02",
-    name: "Mentneo Chat",
-    tagline: "Auditable Reasoning Workspace",
-    category: "Conversational Cognition",
-    headline: "Dual-pane thought inspection with source proofs.",
-    description:
-      "Every response exposes its internal tree-of-thought graph before output commitment. Users and engineers verify intermediate hypotheses, inspect mathematical proofs, and pinpoint exact source citations in real time.",
-    accent: "#8EA0B8", // Platinum Slate
-    bgShade: "#0A0C0F",
-    status: "Enterprise GA",
+    group: "Intelligence",
+    name: "Deep Learning",
+    tagline: "Bespoke Neural Architectures",
+    promise: "Custom neural architectures, training and deployment.",
+    highlights: [
+      "Tailored transformer and diffusion architectures engineered from first principles",
+      "Distributed FP8 cluster orchestration with automated gradient balancing",
+      "Quantized low-power edge deployment across air-gapped infrastructure",
+    ],
     metrics: [
-      { label: "Proof Verification", value: "99.94%", detail: "Formal Lean4 solver check" },
-      { label: "Branch Exploration", value: "32 paths/sec", detail: "Monte Carlo tree search" },
-      { label: "Telemetry Egress", value: "0 bytes", detail: "Air-gapped safe" },
+      { label: "Training speedup", value: "4.2x" },
+      { label: "Quant precision", value: "FP8 / INT4" },
+      { label: "Memory footprint", value: "-62%" },
     ],
-    interactiveType: "chat_reasoning",
-    specs: [
-      { label: "Interference Guard", value: "Cryptographic Attestation" },
-      { label: "Workspace Mode", value: "Multi-Session Ephemeral" },
-      { label: "Branch Control", value: "Interactive Forking" },
-      { label: "Export Standard", value: "SARIF & Markdown Provenance" },
-    ],
-  },
-  {
-    id: "mentneo-voice",
-    index: "03",
-    name: "Mentneo Voice",
-    tagline: "Sub-120ms Full-Duplex DSP",
-    category: "Acoustic Intelligence",
-    headline: "Conversational presence with acoustic physics.",
-    description:
-      "Direct neural audio synthesis without intermediate text-to-speech hops. Operates full duplex with semantic interruption handling, breath modeling, prosody modulation, and room-acoustic reverberation matching.",
-    accent: "#2F5BFF", // Signature Electric Blue
-    bgShade: "#0E1013",
-    status: "Low-Latency Kernel v2",
-    metrics: [
-      { label: "End-to-End Latency", value: "118 ms", detail: "Mic to speaker round-trip" },
-      { label: "Interruption Detection", value: "42 ms", detail: "Instant DSP back-off" },
-      { label: "Sample Precision", value: "48 kHz / 24-bit", detail: "Uncompressed lossless" },
-    ],
-    interactiveType: "dsp_waveform",
-    specs: [
-      { label: "Duplex Mode", value: "Binaural Full-Duplex" },
-      { label: "Acoustic Engine", value: "Direct WaveNet Neural DSP" },
-      { label: "Languages", value: "28 Sovereign & Regional" },
-      { label: "Noise Floor", value: "-68 dB cancellation" },
-    ],
-  },
-  {
-    id: "mentneo-search",
-    index: "04",
-    name: "Mentneo Search (RAG)",
-    tagline: "Deterministic Vector Topography",
-    category: "Retrieval & Grounding",
-    headline: "Sub-millisecond retrieval with geometric rerank.",
-    description:
-      "Combines dense 1536-dimensional semantic embeddings with sparse BM25 lexical constraints and neural cross-encoders. Guarantees deterministic recall across billions of technical documents, contracts, and clinical records.",
-    accent: "#7EB8A2", // Sovereign Sage
-    bgShade: "#080C0A",
-    status: "Distributed Cluster v4",
-    metrics: [
-      { label: "Index Scale", value: "10B+ vectors", detail: "HNSW multi-sharded" },
-      { label: "P99 Query Time", value: "4.8 ms", detail: "SIMD AVX-512 accelerated" },
-      { label: "Citation Accuracy", value: "100%", detail: "Direct span byte-matching" },
-    ],
-    interactiveType: "rag_vector",
-    specs: [
-      { label: "Vector Index", value: "Native C++ HNSW / ScaNN" },
-      { label: "Reranker", value: "Cross-Encoder FlashRank" },
-      { label: "Ingestion Rate", value: "125k docs / min" },
-      { label: "Data Sovereign", value: "On-Prem / S3 Compatible" },
-    ],
-  },
-  {
-    id: "mentneo-studio",
-    index: "05",
-    name: "Mentneo Studio",
-    tagline: "Coherent Generative Ad & Video Engine",
-    category: "Generative Video & Media",
-    headline: "Temporal consistency across frames and product geometry.",
-    description:
-      "Engineered for high-end advertising, product visualization, and cinematic sequence synthesis. Preserves exact CAD dimensions, lighting topology, and typography across 4K HDR 60fps frame generation without morphing artifacts.",
-    accent: "#C49F6E", // Muted Ochre
-    bgShade: "#0E0D0B",
-    status: "Cinematic Beta",
-    metrics: [
-      { label: "Frame Consistency", value: "99.8%", detail: "Optical flow trajectory loss" },
-      { label: "Output Resolution", value: "4K DCI @ 60fps", detail: "ProRes 4444 XQ" },
-      { label: "Geometry Drift", value: "< 0.02 mm", detail: "CAD boundary constraint" },
-    ],
-    interactiveType: "studio_timeline",
-    specs: [
-      { label: "Temporal Model", value: "Diffusion Spatio-Temporal DiT" },
-      { label: "Color Space", value: "ACEScg / Rec.2020 12-bit" },
-      { label: "Camera Control", value: "6-DOF Motion Vector Control" },
-      { label: "Rendering Farm", value: "Auto-Scaling Distributed Ray" },
-    ],
-  },
-  {
-    id: "autonomous-agents",
-    index: "06",
-    name: "Autonomous Agents",
-    tagline: "Self-Healing DAG Orchestration",
-    category: "Agentic Systems",
-    headline: "Deterministic multi-agent swarms with formal consensus.",
-    description:
-      "Deploys autonomous swarms of specialized sub-agents that plan, execute, verify, and self-heal complex multi-stage tasks. Operates with explicit sandboxing, cryptographic auditing, and formal human-in-the-loop escalation gates.",
-    accent: "#7899E8", // Cobalt Slate
-    bgShade: "#0B0E14",
-    status: "Swarm Orchestrator v2.1",
-    metrics: [
-      { label: "Self-Healing Rate", value: "96.4%", detail: "Automated retry & branch repair" },
-      { label: "Max DAG Nodes", value: "50,000+", detail: "Asynchronous task graph" },
-      { label: "Sandbox Isolation", value: "MicroVM / gVisor", detail: "Zero privilege escalation" },
-    ],
-    interactiveType: "agent_dag",
-    specs: [
-      { label: "Execution Graph", value: "Directed Acyclic Directed Graph" },
-      { label: "Consensus Model", value: "Byzantine Fault Tolerant Voting" },
-      { label: "Tool Connectivity", value: "MCP / OpenAPI / GraphQL" },
-      { label: "Memory Subsystem", value: "Hierarchical Episodic Vector" },
-    ],
+    accent: "#9D9CE0", // Calm lavender mist
+    bgShade: "#090A0E",
+    visualType: "deeplearning",
   },
   {
     id: "saadhyam",
-    index: "07",
+    index: "03",
+    group: "Intelligence",
     name: "Saadhyam",
-    tagline: "Autonomous Voice Calling Agent",
-    category: "Enterprise Voice Agents",
-    headline: "Mission-critical outbound & inbound enterprise telephony.",
-    description:
-      "Enterprise-grade autonomous telephone intelligence capable of managing 100,000 concurrent calls. Features sub-second CRM telemetry sync, multi-lingual vernacular dialect adaptation, and real-time regulatory compliance scrubbing.",
-    accent: "#8EA0B8", // Platinum Titanium
-    bgShade: "#101216",
-    status: "Enterprise Production",
+    tagline: "Sovereign Foundation Model",
+    promise: "Mentneo's own foundation model, built in-house.",
+    highlights: [
+      "Native multi-modal tensor architecture trained on sovereign domain corpus",
+      "Formal logic verification gates ensuring zero hallucination drift",
+      "1.2M token linear-memory context window with instant retrieval",
+    ],
     metrics: [
-      { label: "Concurrent Lines", value: "100k+", detail: "Elastic SIP trunking" },
-      { label: "Call Resolution", value: "88.7%", detail: "Zero human intervention required" },
-      { label: "Dialect Fidelity", value: "24 Accents", detail: "Native cadence preservation" },
+      { label: "Context window", value: "1.2M tokens" },
+      { label: "Throughput", value: "320 tok/s" },
+      { label: "Hallucination delta", value: "< 0.08%" },
     ],
-    interactiveType: "saadhyam_telemetry",
-    specs: [
-      { label: "Telephony Stack", value: "WebRTC / SIP Trunk Carrier" },
-      { label: "CRM Integrations", value: "Salesforce / SAP / Zendesk" },
-      { label: "Compliance", value: "TRAI, FCC, GDPR, HIPAA Ready" },
-      { label: "Sentiment Scoring", value: "10Hz Acoustic Pitch Analysis" },
+    accent: "#668CF0", // Refined royal indigo
+    bgShade: "#0A0B10",
+    visualType: "saadhyam",
+  },
+
+  // ─── Group B: AI Humans ─────────────────────────────────────────────
+  {
+    id: "sara",
+    index: "04",
+    group: "AI Humans",
+    name: "Sara",
+    tagline: "Voice Calling Specialist",
+    promise: "AI voice calling agent that talks like a human.",
+    highlights: [
+      "Natural conversational cadence with dynamic acoustic breath and pause modeling",
+      "Instant semantic interruption handling with sub-120ms round-trip reaction",
+      "Automated enterprise CRM telemetry synchronization and call synthesis",
     ],
+    metrics: [
+      { label: "Response latency", value: "118 ms" },
+      { label: "Call resolution", value: "89.4%" },
+      { label: "Vernacular dialects", value: "24+" },
+    ],
+    accent: "#D28E9E", // Muted rose quartz
+    bgShade: "#0D090B",
+    visualType: "ai_human_sara",
+    humanProfile: {
+      role: "Conversational Telephony Specialist",
+      speakingStatus: "Speaking with empathy",
+      initials: "SR",
+    },
+  },
+  {
+    id: "diya",
+    index: "05",
+    group: "AI Humans",
+    name: "Diya",
+    tagline: "Digital Marketing Workforce",
+    promise: "AI digital marketing workforce.",
+    highlights: [
+      "Autonomous campaign strategy, copywriting, and multi-format asset synthesis",
+      "Real-time creative optimization with predictive ROAS attribution modeling",
+      "24/7 cross-channel sentiment monitoring and adaptive audience messaging",
+    ],
+    metrics: [
+      { label: "ROAS increase", value: "+46%" },
+      { label: "Asset velocity", value: "50x" },
+      { label: "Channels managed", value: "12 live" },
+    ],
+    accent: "#D69F68", // Warm champagne amber
+    bgShade: "#0D0A08",
+    visualType: "ai_human_diya",
+    humanProfile: {
+      role: "Growth & Brand Strategy Director",
+      speakingStatus: "Analyzing audience signals",
+      initials: "DY",
+    },
+  },
+  {
+    id: "valmiki",
+    index: "06",
+    group: "AI Humans",
+    name: "Valmiki",
+    tagline: "Enterprise Knowledge & Narrative",
+    promise: "AI human synthesizing strategic enterprise knowledge and narratives.",
+    highlights: [
+      "Petabyte-scale institutional memory indexing across disparate repositories",
+      "Authoritative executive briefings and structured organizational knowledge",
+      "Deterministic source provenance with byte-exact citations and cryptographic proof",
+    ],
+    metrics: [
+      { label: "Synthesis ratio", value: "10,000 : 1" },
+      { label: "Citation fidelity", value: "100%" },
+      { label: "Query latency", value: "4.2 ms" },
+    ],
+    accent: "#7DB299", // Serene sage eucalyptus
+    bgShade: "#080C0A",
+    visualType: "ai_human_valmiki",
+    humanProfile: {
+      role: "Strategic Knowledge Synthesizer",
+      speakingStatus: "Synthesizing briefing",
+      initials: "VM",
+    },
+  },
+  {
+    id: "rudra",
+    index: "07",
+    group: "AI Humans",
+    name: "Rudra",
+    tagline: "Operations & Mission Orchestration",
+    promise: "AI human orchestrating resilient operations and autonomous workflows.",
+    highlights: [
+      "Orchestrates distributed multi-agent DAGs with Byzantine fault tolerance",
+      "Autonomous real-time anomaly mitigation and self-healing task execution",
+      "Continuous mission-critical telemetry monitoring in air-gapped enclaves",
+    ],
+    metrics: [
+      { label: "Self-healing rate", value: "98.2%" },
+      { label: "Task throughput", value: "50k ops/s" },
+      { label: "SLA uptime", value: "99.999%" },
+    ],
+    accent: "#7094C6", // Tactical steel blue
+    bgShade: "#080A0E",
+    visualType: "ai_human_rudra",
+    humanProfile: {
+      role: "Swarm Orchestrator & Operations",
+      speakingStatus: "Monitoring system equilibrium",
+      initials: "RD",
+    },
+  },
+  {
+    id: "law-ai",
+    index: "08",
+    group: "AI Humans",
+    name: "Law AI",
+    tagline: "Legal Research & Statutory Drafting",
+    promise: "AI legal assistant for legal research and drafting.",
+    highlights: [
+      "Exhaustive statutory cross-referencing and precedential risk analysis",
+      "Precision clause drafting with clause-by-clause audit and redline provenance",
+      "Strict attorney-client isolation ensuring zero egress or telemetry retention",
+    ],
+    metrics: [
+      { label: "Research time", value: "-85%" },
+      { label: "Precedent accuracy", value: "99.8%" },
+      { label: "Jurisdictions", value: "45+" },
+    ],
+    accent: "#BDA588", // Warm platinum bronze
+    bgShade: "#0C0B0A",
+    visualType: "ai_human_law",
+    humanProfile: {
+      role: "Legal Research & Statutory Drafting",
+      speakingStatus: "Auditing statutory clauses",
+      initials: "LW",
+    },
+  },
+
+  // ─── Group C: Silicon Architecture ──────────────────────────────────
+  {
+    id: "neuro-hgi-chip",
+    index: "09",
+    group: "Silicon",
+    name: "Neuro HGI",
+    tagline: "Heterogeneous Silicon Substrate",
+    promise: "Next-generation silicon substrate built specifically for frontier intelligence.",
+    highlights: [
+      "Monolithic 2.2 mm silicon die with high-density optical memory interconnects",
+      "680 TFLOPS FP8 compute capacity packaged within an 11.8W thermal envelope",
+      "Direct physical hardware bridge for on-premises sovereign compute clusters",
+    ],
+    metrics: [
+      { label: "Die dimension", value: "2.2 mm" },
+      { label: "Compute density", value: "680 TFLOPS" },
+      { label: "Thermal budget", value: "11.8 W" },
+    ],
+    accent: "#F59E0B", // Silicon amber
+    bgShade: "#0F0E0A",
+    visualType: "neuro_chip",
+  },
+];
+
+// ─── Hero Card Fan (7 Domain & Product Cards, Centre = Flagship) ─────
+export type HeroVisualType =
+  | "saadhyam_orb"
+  | "language_streaming"
+  | "voice_waveform"
+  | "growth_chart"
+  | "education_path"
+  | "iot_nodes"
+  | "neuro_chip_render";
+
+export interface HeroFanCard {
+  id: string;
+  label: string;
+  name: string;
+  promise: string;
+  description: string;
+  visualType: HeroVisualType;
+  accent: string;
+  glowColor: string;
+  href: string;
+  sceneIndex?: number;
+}
+
+export const HERO_FAN_CARDS: HeroFanCard[] = [
+  {
+    id: "hero-llm",
+    label: "Language AI",
+    name: "LLM & Conversational AI",
+    promise: "Language models that understand India's languages.",
+    description:
+      "Multilingual foundation reasoning with deep semantic understanding of Indian dialects and formal logic validation.",
+    visualType: "language_streaming",
+    accent: "#7EA4D4",
+    glowColor: "rgba(126, 164, 212, 0.28)",
+    href: "#chapter-3",
+    sceneIndex: 0,
+  },
+  {
+    id: "hero-sara",
+    label: "Voice AI",
+    name: "Sara",
+    promise: "An AI voice agent that makes and answers calls like a person.",
+    description:
+      "Full-duplex conversational voice telephony with sub-120ms latency and real-time CRM telemetry integration.",
+    visualType: "voice_waveform",
+    accent: "#D28E9E",
+    glowColor: "rgba(210, 142, 158, 0.28)",
+    href: "#chapter-3",
+    sceneIndex: 3,
+  },
+  {
+    id: "hero-diya",
+    label: "Digital marketing",
+    name: "Diya",
+    promise: "An AI marketing workforce for growing businesses.",
+    description:
+      "Autonomous creative campaign generation across copy, visual, and video with real-time ROAS optimization.",
+    visualType: "growth_chart",
+    accent: "#D69F68",
+    glowColor: "rgba(214, 159, 104, 0.28)",
+    href: "#chapter-3",
+    sceneIndex: 4,
+  },
+  {
+    id: "hero-saadhyam",
+    label: "Foundation model",
+    name: "Saadhyam",
+    promise: "Our own foundation model.",
+    description:
+      "Pre-trained on verified domain corpus with native multi-modal tensor kernels, linear memory scaling, and zero hallucination drift.",
+    visualType: "saadhyam_orb",
+    accent: "#668CF0",
+    glowColor: "rgba(102, 140, 240, 0.35)",
+    href: "#chapter-3",
+    sceneIndex: 2,
+  },
+  {
+    id: "hero-education",
+    label: "Education",
+    name: "Education Platforms",
+    promise: "Learning products for students and colleges, from VidyaSetu to Mentlearn.",
+    description:
+      "Adaptive curriculum delivery, hands-on engineering workspaces, and institutional mastery certification.",
+    visualType: "education_path",
+    accent: "#60A5FA",
+    glowColor: "rgba(96, 165, 250, 0.28)",
+    href: "#chapter-6",
+  },
+  {
+    id: "hero-iot",
+    label: "IoT",
+    name: "IoT & Embedded",
+    promise: "Connected devices, sensors and smart hardware.",
+    description:
+      "Ultra-low-power firmware, telemetry streaming, and edge intelligence designed for resilient sovereign infrastructure.",
+    visualType: "iot_nodes",
+    accent: "#7DB299",
+    glowColor: "rgba(125, 178, 153, 0.28)",
+    href: "#chapter-5",
+  },
+  {
+    id: "hero-chip",
+    label: "Hardware, coming soon",
+    name: "Neuro HGI Chip",
+    promise: "Our upcoming 2.2 mm neuromorphic chip.",
+    description:
+      "Monolithic silicon substrate delivering 680 TFLOPS FP8 compute capacity within an 11.8-watt thermal budget.",
+    visualType: "neuro_chip_render",
+    accent: "#F59E0B",
+    glowColor: "rgba(245, 158, 11, 0.35)",
+    href: "#chapter-4",
+    sceneIndex: 8,
   },
 ];
