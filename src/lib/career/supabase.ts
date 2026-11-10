@@ -15,3 +15,18 @@ export const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
   },
 });
 
+/**
+ * Asynchronously synchronizes candidate application record to Supabase
+ */
+export async function syncApplicationToSupabase(record: Record<string, unknown>): Promise<void> {
+  try {
+    const { error } = await supabaseAdmin.from("applications").insert([record]);
+    if (error) {
+      console.warn("[Supabase] Cloud sync notice:", error.message);
+    } else {
+      console.log(`[Supabase] Synced candidate: ${record.application_reference}`);
+    }
+  } catch (err: unknown) {
+    console.warn("[Supabase] Cloud sync error:", (err as Error).message);
+  }
+}

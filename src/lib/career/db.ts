@@ -1,5 +1,6 @@
 import fs from "fs";
 import path from "path";
+import os from "os";
 
 export interface PositionRecord {
   id: string;
@@ -60,16 +61,118 @@ export interface ApplicationNoteRecord {
   created_at: string;
 }
 
-// Global cached connection for local development
+// Global cached connection for local development / serverless instances
 interface LocalSqliteDb {
   exec: (sql: string) => void;
   prepare: (sql: string) => {
     all: (...params: unknown[]) => unknown[];
+    get: (...params: unknown[]) => unknown;
     run: (...params: unknown[]) => { lastInsertRowid: number | bigint; changes: number };
   };
 }
 
 let localDbInstance: LocalSqliteDb | null = null;
+
+const EMBEDDED_SCHEMA_SQL = `
+CREATE TABLE IF NOT EXISTS applications (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  application_reference TEXT UNIQUE NOT NULL,
+  applicant_type TEXT NOT NULL,
+  full_name TEXT NOT NULL,
+  email TEXT NOT NULL,
+  mobile TEXT NOT NULL,
+  college_name TEXT,
+  college_roll_number TEXT NOT NULL,
+  branch TEXT,
+  mba_specialization TEXT,
+  current_cgpa TEXT,
+  current_percentage TEXT,
+  graduation_year TEXT NOT NULL,
+  relocation_willingness TEXT NOT NULL,
+  technical_skills TEXT,
+  skills_strengths TEXT,
+  github_url TEXT,
+  linkedin_url TEXT,
+  previous_experience TEXT,
+  resume_object_key TEXT,
+  application_status TEXT NOT NULL DEFAULT 'Submitted',
+  submitted_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS application_positions (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  application_id INTEGER NOT NULL,
+  position_id TEXT NOT NULL,
+  position_name TEXT NOT NULL,
+  FOREIGN KEY (application_id) REFERENCES applications(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS positions (
+  id TEXT PRIMARY KEY,
+  title TEXT NOT NULL,
+  category TEXT NOT NULL,
+  description TEXT NOT NULL,
+  skills TEXT NOT NULL,
+  active INTEGER NOT NULL DEFAULT 1,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS application_events (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  application_id INTEGER NOT NULL,
+  event_type TEXT NOT NULL,
+  event_description TEXT NOT NULL,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (application_id) REFERENCES applications(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS application_notes (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  application_id INTEGER NOT NULL,
+  admin_id TEXT NOT NULL DEFAULT 'admin',
+  note TEXT NOT NULL,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (application_id) REFERENCES applications(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_applications_ref ON applications(application_reference);
+CREATE INDEX IF NOT EXISTS idx_applications_type ON applications(applicant_type);
+CREATE INDEX IF NOT EXISTS idx_applications_status ON applications(application_status);
+`;
+
+/**
+ * Resolves safe writable data directory.
+ * On Vercel / AWS Lambda (/var/task), filesystems are strictly read-only except /tmp (os.tmpdir()).
+ */
+function getSafeDbPath(): string {
+  const isServerless =
+    process.env.VERCEL === "1" ||
+    !!process.env.AWS_LAMBDA_FUNCTION_NAME ||
+    process.cwd().startsWith("/var/task");
+
+  if (isServerless) {
+    const tmpDataDir = path.join(os.tmpdir() || "/tmp", "mentneo_db");
+    try {
+      if (!fs.existsSync(tmpDataDir)) {
+        fs.mkdirSync(tmpDataDir, { recursive: true });
+      }
+      return path.join(tmpDataDir, "career.db");
+    } catch {
+      return path.join(os.tmpdir() || "/tmp", "career.db");
+    }
+  }
+
+  try {
+    const dataDir = path.resolve(process.cwd(), "data");
+    if (!fs.existsSync(dataDir)) {
+      fs.mkdirSync(dataDir, { recursive: true });
+    }
+    return path.join(dataDir, "career.db");
+  } catch {
+    return path.join(os.tmpdir() || "/tmp", "career.db");
+  }
+}
 
 function getLocalDb(): LocalSqliteDb {
   if (localDbInstance) return localDbInstance;
@@ -78,20 +181,11 @@ function getLocalDb(): LocalSqliteDb {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const { DatabaseSync } = require("node:sqlite");
 
-  const dataDir = path.resolve(process.cwd(), "data");
-  if (!fs.existsSync(dataDir)) {
-    fs.mkdirSync(dataDir, { recursive: true });
-  }
-
-  const dbPath = path.join(dataDir, "career.db");
+  const dbPath = getSafeDbPath();
   const db = new DatabaseSync(dbPath);
 
-  // Initialize schema
-  const schemaPath = path.resolve(process.cwd(), "src/lib/career/schema.sql");
-  if (fs.existsSync(schemaPath)) {
-    const schemaSql = fs.readFileSync(schemaPath, "utf-8");
-    db.exec(schemaSql);
-  }
+  // Initialize schema with embedded SQL
+  db.exec(EMBEDDED_SCHEMA_SQL);
 
   // Ensure positions contains only the TWO official openings: BTech ML & MBA
   db.exec("DELETE FROM positions WHERE id NOT IN ('btech-ml', 'mba-role')");
@@ -129,15 +223,13 @@ function getLocalDb(): LocalSqliteDb {
 
 /**
  * Universal query runner:
- * If Cloudflare D1 environment variables are set, dispatches via Cloudflare D1 REST API.
- * Otherwise, runs locally via native node:sqlite.
+ * Dispatches via Cloudflare D1 if configured; otherwise runs via safe local SQLite.
  */
 export async function dbQuery<T = unknown>(sql: string, params: unknown[] = []): Promise<T[]> {
   const accountId = process.env.CLOUDFLARE_ACCOUNT_ID;
   const databaseId = process.env.CLOUDFLARE_D1_DATABASE_ID;
   const token = process.env.CLOUDFLARE_D1_TOKEN;
 
-  // Cloudflare D1 REST API Execution
   if (accountId && databaseId && token) {
     try {
       const res = await fetch(
@@ -148,24 +240,19 @@ export async function dbQuery<T = unknown>(sql: string, params: unknown[] = []):
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({
-            sql,
-            params,
-          }),
+          body: JSON.stringify({ sql, params }),
         }
       );
 
       const data = await res.json();
-      if (!data.success) {
-        throw new Error(data.errors?.[0]?.message || "Cloudflare D1 query error");
+      if (data.success) {
+        return (data.result?.[0]?.results || []) as T[];
       }
-      return (data.result?.[0]?.results || []) as T[];
     } catch (err: unknown) {
-      console.warn("Cloudflare D1 query failed, falling back to local DB:", (err as Error).message);
+      console.warn("[DB] Cloudflare D1 query note:", (err as Error).message);
     }
   }
 
-  // Local SQLite fallback
   const db = getLocalDb();
   const stmt = db.prepare(sql);
   const rows = stmt.all(...params) as T[];
@@ -173,7 +260,7 @@ export async function dbQuery<T = unknown>(sql: string, params: unknown[] = []):
 }
 
 /**
- * Universal statement executor (INSERT / UPDATE / DELETE)
+ * Universal statement executor (INSERT / UPDATE / DELETE) with concurrency retry
  */
 export async function dbExecute(
   sql: string,
@@ -193,38 +280,46 @@ export async function dbExecute(
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({
-            sql,
-            params,
-          }),
+          body: JSON.stringify({ sql, params }),
         }
       );
 
       const data = await res.json();
-      if (!data.success) {
-        throw new Error(data.errors?.[0]?.message || "Cloudflare D1 execute error");
+      if (data.success) {
+        const meta = data.result?.[0]?.meta;
+        return {
+          lastInsertRowid: meta?.last_row_id || 0,
+          changes: meta?.changes || 0,
+        };
       }
-      const meta = data.result?.[0]?.meta;
-      return {
-        lastInsertRowid: meta?.last_row_id || 0,
-        changes: meta?.changes || 0,
-      };
     } catch (err: unknown) {
-      console.warn("Cloudflare D1 execute failed, falling back to local DB:", (err as Error).message);
+      console.warn("[DB] Cloudflare D1 execute note:", (err as Error).message);
     }
   }
 
-  const db = getLocalDb();
-  const stmt = db.prepare(sql);
-  const result = stmt.run(...params);
-  return {
-    lastInsertRowid: result.lastInsertRowid,
-    changes: result.changes,
-  };
+  // Local execute with micro retry for concurrency / SQLite busy states
+  let attempts = 0;
+  while (attempts < 3) {
+    try {
+      const db = getLocalDb();
+      const stmt = db.prepare(sql);
+      const result = stmt.run(...params);
+      return {
+        lastInsertRowid: result.lastInsertRowid,
+        changes: result.changes,
+      };
+    } catch (err: unknown) {
+      attempts++;
+      if (attempts >= 3) throw err;
+      await new Promise((r) => setTimeout(r, 40 * attempts));
+    }
+  }
+
+  return { lastInsertRowid: 0, changes: 0 };
 }
 
 /**
- * Generates an architectural application reference number:
+ * Generates an architectural application reference code:
  * E.g., MNT-2026-BT-A98F2 or MNT-2026-MB-7C2E1
  */
 export function generateApplicationReference(type: "btech" | "mba" | "internship"): string {

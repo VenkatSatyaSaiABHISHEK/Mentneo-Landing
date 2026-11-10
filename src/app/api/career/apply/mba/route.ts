@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { dbExecute, generateApplicationReference } from "@/lib/career/db";
 import { saveResumeFile, validatePdfFile } from "@/lib/career/storage";
+import { syncApplicationToSupabase } from "@/lib/career/supabase";
 
 export const dynamic = "force-dynamic";
+export const maxDuration = 30;
 
 export async function POST(req: NextRequest) {
   try {
@@ -149,6 +151,25 @@ export async function POST(req: NextRequest) {
         `MBA Application submitted for ${positions.join(", ")} by ${fullName} (${reference})`,
       ]
     );
+
+    // Asynchronously sync to Supabase database
+    syncApplicationToSupabase({
+      application_reference: reference,
+      applicant_type: "mba",
+      full_name: fullName,
+      email,
+      mobile,
+      college_name: collegeName,
+      college_roll_number: collegeRollNumber,
+      mba_specialization: mbaSpecialization,
+      current_cgpa: currentCgpa,
+      graduation_year: graduationYear,
+      relocation_willingness: relocationWillingness,
+      skills_strengths: skillsStrengths,
+      previous_experience: previousExperience,
+      resume_object_key: storageResult.key,
+      application_status: "Submitted",
+    }).catch(() => {});
 
     return NextResponse.json({
       success: true,

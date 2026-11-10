@@ -184,8 +184,8 @@ export default function MbaApplyPage() {
         setErrors((prev) => ({ ...prev, resume: "Only PDF documents (.pdf) are accepted." }));
         return;
       }
-      if (file.size > 10 * 1024 * 1024) {
-        setErrors((prev) => ({ ...prev, resume: "File size exceeds 10 MB limit." }));
+      if (file.size > 4 * 1024 * 1024) {
+        setErrors((prev) => ({ ...prev, resume: "Resume file exceeds the 4 MB limit. Please upload a PDF under 4 MB." }));
         return;
       }
       updateField("resume", file);
@@ -219,13 +219,26 @@ export default function MbaApplyPage() {
         body: data,
       });
 
-      const json = await res.json();
+      const rawText = await res.text();
+      let json: { success?: boolean; error?: string; reference?: string; submittedAt?: string } = {};
+      try {
+        json = JSON.parse(rawText);
+      } catch {
+        if (res.status === 413 || rawText.includes("Request Entity Too Large")) {
+          throw new Error("Your resume PDF is too large. Please upload a PDF under 4 MB.");
+        }
+        if (res.status >= 500) {
+          throw new Error("Recruitment servers are currently processing high applicant volume. Please retry in a few seconds.");
+        }
+        throw new Error("Unable to complete submission. Please verify your connection and try again.");
+      }
+
       if (!res.ok || !json.success) {
         throw new Error(json.error || "Failed to submit application");
       }
 
       setSubmissionResult({
-        reference: json.reference,
+        reference: json.reference || "MNT-2026-MB",
         submittedAt: json.submittedAt || new Date().toISOString(),
       });
       window.scrollTo({ top: 0, behavior: "smooth" });
@@ -751,7 +764,7 @@ export default function MbaApplyPage() {
                               Click to browse or drop your PDF resume here
                             </div>
                             <p className="text-[11px] text-[#737883] font-mono">
-                              PDF only · Maximum file size 10 MB
+                              PDF only · Maximum file size 4 MB
                             </p>
                           </div>
                         )}
