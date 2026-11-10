@@ -11,6 +11,7 @@ import {
   FileText,
   CheckCircle2,
   AlertCircle,
+  Loader2,
   X,
 } from "lucide-react";
 
@@ -872,21 +873,31 @@ export default function MbaApplyPage() {
                   <ArrowRight className="w-4 h-4" />
                 </button>
               ) : (
-                <button
-                  type="button"
-                  onClick={handleSubmit}
-                  disabled={submitting}
-                  className="inline-flex items-center gap-2 px-7 py-3 rounded-xl bg-[#0B0C0E] text-white text-xs font-semibold hover:bg-black transition-all shadow-md disabled:opacity-50"
-                >
-                  {submitting ? (
-                    <span>Submitting Application...</span>
-                  ) : (
-                    <>
-                      <span>Confirm &amp; Submit Application</span>
-                      <ArrowRight className="w-4 h-4" />
-                    </>
+                <div className="flex flex-col items-end gap-2">
+                  {submitting && (
+                    <p className="text-[11px] font-mono text-[#0B0C0E] animate-pulse">
+                      Uploading resume &amp; syncing to recruitment cloud... Please do not refresh.
+                    </p>
                   )}
-                </button>
+                  <button
+                    type="button"
+                    onClick={handleSubmit}
+                    disabled={submitting}
+                    className="inline-flex items-center gap-2 px-7 py-3 rounded-xl bg-[#0B0C0E] text-white text-xs font-semibold hover:bg-black transition-all shadow-md disabled:opacity-70 disabled:cursor-not-allowed"
+                  >
+                    {submitting ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <span>Submitting Application...</span>
+                      </>
+                    ) : (
+                      <>
+                        <span>Confirm &amp; Submit Application</span>
+                        <ArrowRight className="w-4 h-4" />
+                      </>
+                    )}
+                  </button>
+                </div>
               )}
             </div>
           </div>

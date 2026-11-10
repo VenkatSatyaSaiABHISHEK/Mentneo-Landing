@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isAuthenticatedAdmin } from "@/lib/career/auth";
-import { dbQuery, dbExecute } from "@/lib/career/db";
+import { updateCloudApplicationStatus, getAllStoredApplications } from "@/lib/career/cloud-store";
 
 export const dynamic = "force-dynamic";
+export const maxDuration = 30;
 
 const VALID_STATUSES = [
   "Submitted",
@@ -23,11 +24,7 @@ export async function PATCH(
   }
 
   try {
-    const id = parseInt(params.id, 10);
-    if (isNaN(id)) {
-      return NextResponse.json({ success: false, error: "Invalid applicant ID" }, { status: 400 });
-    }
-
+    const rawId = params.id;
     const body = await req.json();
     const newStatus = body.status?.trim();
 
@@ -38,48 +35,29 @@ export async function PATCH(
       );
     }
 
-    // Get current status
-    const current = await dbQuery<{ application_status: string; full_name: string }>(
-      "SELECT application_status, full_name FROM applications WHERE id = ?",
-      [id]
+    const all = await getAllStoredApplications();
+    const target = all.find(
+      (a) =>
+        a.application_reference === rawId ||
+        String(a.id) === rawId ||
+        a.application_reference.toLowerCase() === rawId.toLowerCase()
     );
 
-    if (!current || current.length === 0) {
+    if (!target) {
       return NextResponse.json({ success: false, error: "Applicant not found" }, { status: 404 });
     }
 
-    const prevStatus = current[0].application_status;
-
-    if (prevStatus === newStatus) {
-      return NextResponse.json({
-        success: true,
-        message: "Status unchanged",
-        status: newStatus,
-      });
-    }
-
-    // Update status
-    await dbExecute(
-      "UPDATE applications SET application_status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
-      [newStatus, id]
-    );
-
-    // Record history event
-    await dbExecute(
-      "INSERT INTO application_events (application_id, event_type, event_description) VALUES (?, 'status_change', ?)",
-      [id, `Status updated from "${prevStatus}" to "${newStatus}"`]
-    );
+    await updateCloudApplicationStatus(target.application_reference, newStatus);
 
     return NextResponse.json({
       success: true,
       message: `Status updated to ${newStatus}`,
       status: newStatus,
-      updatedAt: new Date().toISOString(),
     });
   } catch (err: unknown) {
-    console.error("Error updating application status:", (err as Error).message);
+    console.error("Status update error:", (err as Error).message);
     return NextResponse.json(
-      { success: false, error: "Failed to update application status" },
+      { success: false, error: "Failed to update candidate status" },
       { status: 500 }
     );
   }

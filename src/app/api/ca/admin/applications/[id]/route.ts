@@ -1,14 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isAuthenticatedAdmin } from "@/lib/career/auth";
-import {
-  dbQuery,
-  ApplicationRecord,
-  ApplicationPositionRecord,
-  ApplicationEventRecord,
-  ApplicationNoteRecord,
-} from "@/lib/career/db";
+import { getAllStoredApplications } from "@/lib/career/cloud-store";
 
 export const dynamic = "force-dynamic";
+export const maxDuration = 30;
 
 export async function GET(
   req: NextRequest,
@@ -20,45 +15,35 @@ export async function GET(
   }
 
   try {
-    const id = parseInt(params.id, 10);
-    if (isNaN(id)) {
-      return NextResponse.json({ success: false, error: "Invalid applicant ID" }, { status: 400 });
-    }
-
-    const apps = await dbQuery<ApplicationRecord>(
-      "SELECT * FROM applications WHERE id = ?",
-      [id]
+    const rawId = params.id;
+    const all = await getAllStoredApplications();
+    const app = all.find(
+      (a) =>
+        a.application_reference === rawId ||
+        String(a.id) === rawId ||
+        a.application_reference.toLowerCase() === rawId.toLowerCase()
     );
 
-    if (!apps || apps.length === 0) {
+    if (!app) {
       return NextResponse.json({ success: false, error: "Applicant not found" }, { status: 404 });
     }
 
-    const application = apps[0];
+    const events = app.events || [
+      {
+        id: 1,
+        event_type: "STATUS_CHANGE",
+        event_description: "Application successfully submitted via Mentneo Careers Portal",
+        created_at: app.submitted_at || new Date().toISOString(),
+      },
+    ];
 
-    // Fetch applied positions
-    const positions = await dbQuery<ApplicationPositionRecord>(
-      "SELECT * FROM application_positions WHERE application_id = ?",
-      [id]
-    );
-
-    // Fetch application history events
-    const events = await dbQuery<ApplicationEventRecord>(
-      "SELECT * FROM application_events WHERE application_id = ? ORDER BY id DESC",
-      [id]
-    );
-
-    // Fetch admin notes
-    const notes = await dbQuery<ApplicationNoteRecord>(
-      "SELECT * FROM application_notes WHERE application_id = ? ORDER BY id DESC",
-      [id]
-    );
+    const notes = app.notes || [];
 
     return NextResponse.json({
       success: true,
       data: {
-        application,
-        positions: positions.map((p) => p.position_name),
+        application: app,
+        positions: app.positions || [],
         events,
         notes,
       },

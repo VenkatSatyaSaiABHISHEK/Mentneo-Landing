@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { dbExecute, generateApplicationReference } from "@/lib/career/db";
 import { saveResumeFile, validatePdfFile } from "@/lib/career/storage";
-import { syncApplicationToSupabase } from "@/lib/career/supabase";
+import { persistNewApplication } from "@/lib/career/cloud-store";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 30;
@@ -152,24 +152,35 @@ export async function POST(req: NextRequest) {
       ]
     );
 
-    // Asynchronously sync to Supabase database
-    syncApplicationToSupabase({
-      application_reference: reference,
-      applicant_type: "btech",
-      full_name: fullName,
-      email,
-      mobile,
-      college_roll_number: collegeRollNumber,
-      branch,
-      current_cgpa: currentCgpa,
-      graduation_year: graduationYear,
-      relocation_willingness: relocationWillingness,
-      technical_skills: technicalSkills,
-      github_url: githubUrl,
-      linkedin_url: linkedinUrl,
-      resume_object_key: storageResult.key,
-      application_status: "Submitted",
-    }).catch(() => {});
+    // Persist immediately across Cloudflare R2 and Supabase cloud store
+    await persistNewApplication(
+      {
+        id: appId,
+        application_reference: reference,
+        applicant_type: "btech",
+        full_name: fullName,
+        email,
+        mobile,
+        college_name: null,
+        college_roll_number: collegeRollNumber,
+        branch,
+        mba_specialization: null,
+        current_cgpa: currentCgpa,
+        current_percentage: null,
+        graduation_year: graduationYear,
+        relocation_willingness: relocationWillingness,
+        technical_skills: technicalSkills,
+        skills_strengths: null,
+        github_url: githubUrl,
+        linkedin_url: linkedinUrl,
+        previous_experience: null,
+        resume_object_key: storageResult.key,
+        application_status: "Submitted",
+        submitted_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      },
+      positions
+    );
 
     return NextResponse.json({
       success: true,

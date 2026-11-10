@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isAuthenticatedAdmin } from "@/lib/career/auth";
-import { dbQuery } from "@/lib/career/db";
+import { getAllStoredApplications } from "@/lib/career/cloud-store";
 
 export const dynamic = "force-dynamic";
+export const maxDuration = 30;
 
 export async function GET(req: NextRequest) {
   const isAuth = await isAuthenticatedAdmin(req);
@@ -11,36 +12,37 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const categoryStats = await dbQuery<{ applicant_type: string; count: number }>(
-      "SELECT applicant_type, COUNT(*) as count FROM applications GROUP BY applicant_type"
-    );
+    const apps = await getAllStoredApplications();
 
-    const statusStats = await dbQuery<{ application_status: string; count: number }>(
-      "SELECT application_status, COUNT(*) as count FROM applications GROUP BY application_status"
-    );
+    const categoryMap: Record<string, number> = {};
+    const statusMap: Record<string, number> = {};
+    const posMap: Record<string, number> = {};
+    const gradMap: Record<string, number> = {};
+    const branchMap: Record<string, number> = {};
 
-    const positionStats = await dbQuery<{ position_name: string; count: number }>(
-      `SELECT position_name, COUNT(*) as count
-       FROM application_positions
-       GROUP BY position_name
-       ORDER BY count DESC`
-    );
+    for (const app of apps) {
+      categoryMap[app.applicant_type] = (categoryMap[app.applicant_type] || 0) + 1;
+      statusMap[app.application_status] = (statusMap[app.application_status] || 0) + 1;
 
-    const gradYearStats = await dbQuery<{ graduation_year: string; count: number }>(
-      `SELECT graduation_year, COUNT(*) as count
-       FROM applications
-       GROUP BY graduation_year
-       ORDER BY graduation_year ASC`
-    );
+      if (Array.isArray(app.positions)) {
+        for (const p of app.positions) {
+          posMap[p] = (posMap[p] || 0) + 1;
+        }
+      }
 
-    const branchStats = await dbQuery<{ branch: string; count: number }>(
-      `SELECT COALESCE(branch, mba_specialization, 'General') as branch_name, COUNT(*) as count
-       FROM applications
-       WHERE branch IS NOT NULL OR mba_specialization IS NOT NULL
-       GROUP BY branch_name
-       ORDER BY count DESC
-       LIMIT 8`
-    );
+      if (app.graduation_year) {
+        gradMap[app.graduation_year] = (gradMap[app.graduation_year] || 0) + 1;
+      }
+
+      const branchName = app.branch || app.mba_specialization || "General";
+      branchMap[branchName] = (branchMap[branchName] || 0) + 1;
+    }
+
+    const categoryStats = Object.entries(categoryMap).map(([applicant_type, count]) => ({ applicant_type, count }));
+    const statusStats = Object.entries(statusMap).map(([application_status, count]) => ({ application_status, count }));
+    const positionStats = Object.entries(posMap).map(([position_name, count]) => ({ position_name, count })).sort((a, b) => b.count - a.count);
+    const gradYearStats = Object.entries(gradMap).map(([graduation_year, count]) => ({ graduation_year, count })).sort((a, b) => a.graduation_year.localeCompare(b.graduation_year));
+    const branchStats = Object.entries(branchMap).map(([branch, count]) => ({ branch, count })).sort((a, b) => b.count - a.count).slice(0, 8);
 
     return NextResponse.json({
       success: true,

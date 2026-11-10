@@ -179,7 +179,33 @@ export async function getResumeFile(key: string): Promise<{ buffer: Buffer; cont
     console.warn("[Storage] Supabase download notice:", (err as Error).message);
   }
 
-  // 2. Try Cloudflare R2 Public URL
+  // 2. Try Cloudflare R2 via Authenticated API (Direct & Secure)
+  const accountId = process.env.CLOUDFLARE_ACCOUNT_ID;
+  const apiToken = process.env.CLOUDFLARE_API_TOKEN;
+  const bucketName = process.env.CLOUDFLARE_R2_BUCKET_NAME || "smartcitylab";
+
+  if (accountId && apiToken && bucketName) {
+    try {
+      const endpoint = `https://api.cloudflare.com/client/v4/accounts/${accountId}/r2/buckets/${bucketName}/objects/${encodeURIComponent(key)}`;
+      const res = await fetch(endpoint, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${apiToken}`,
+        },
+      });
+      if (res.ok) {
+        const arrayBuf = await res.arrayBuffer();
+        return {
+          buffer: Buffer.from(arrayBuf),
+          contentType: "application/pdf",
+        };
+      }
+    } catch (r2Err) {
+      console.warn("[Storage] Cloudflare R2 download notice:", (r2Err as Error).message);
+    }
+  }
+
+  // 3. Try Cloudflare R2 Public URL
   const publicUrl = process.env.NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL;
   if (publicUrl) {
     try {
