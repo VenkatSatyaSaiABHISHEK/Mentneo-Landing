@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import Logo from "@/components/ui/Logo";
 
@@ -80,7 +81,7 @@ export default function FinaleSection() {
         </h1>
       </div>
 
-      {/* MINIMAL FOOTER: Keep ONLY Hyderabad, India, contact email, copyright */}
+      {/* MINIMAL FOOTER */}
       <footer className="relative z-10 w-full max-w-7xl mx-auto pt-10 border-t border-white/[0.08] flex flex-col md:flex-row items-center justify-between gap-6 font-mono text-[11px] text-white/50">
         <div className="flex items-center gap-3">
           <Logo size="sm" showWordmark={true} showTagline={false} />
@@ -88,7 +89,17 @@ export default function FinaleSection() {
           <span>Hyderabad, India</span>
         </div>
 
-        <div>
+        <div className="flex items-center gap-6">
+          <Link
+            href="/career"
+            className="hover:text-white transition-colors flex items-center gap-1.5 text-white/80 hover:underline underline-offset-4"
+          >
+            <span>Careers</span>
+            <span className="text-[9px] px-1.5 py-0.5 rounded-full border border-white/20 bg-white/5 text-[#38BDF8]">
+              2 Openings
+            </span>
+          </Link>
+          <span>·</span>
           <a
             href="mailto:research@mentneo.ai"
             className="hover:text-white transition-colors underline-offset-4 hover:underline"
@@ -98,7 +109,7 @@ export default function FinaleSection() {
         </div>
 
         <div>
-          <span>© 2025 Mentneo Inc. All rights reserved.</span>
+          <span>© 2026 Mentneo Inc. All rights reserved.</span>
         </div>
       </footer>
 
