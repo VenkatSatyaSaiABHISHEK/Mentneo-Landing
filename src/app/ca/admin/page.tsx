@@ -128,12 +128,24 @@ export default function AdminPage() {
       const res = await fetch("/api/ca/admin/dashboard");
       if (res.ok) {
         const json = await res.json();
-        if (json.success) {
+        if (json.success && json.data) {
           setIsAuthenticated(true);
-          setMetrics(json.data.metrics);
-          setPositionStats(json.data.positionStats);
-          setGradYearStats(json.data.gradYearStats);
-          setRecentApplications(json.data.recentApplications);
+          const rawM = json.data.metrics || json.data.overview || {};
+          setMetrics({
+            total: rawM.total ?? rawM.totalApplicants ?? 0,
+            btech: rawM.btech ?? rawM.btechTotal ?? 0,
+            mba: rawM.mba ?? rawM.mbaTotal ?? 0,
+            internship: rawM.internship ?? rawM.internshipTotal ?? 0,
+            submitted: rawM.submitted ?? 0,
+            underReview: rawM.underReview ?? 0,
+            shortlisted: rawM.shortlisted ?? 0,
+            interview: rawM.interview ?? 0,
+            selected: rawM.selected ?? 0,
+            rejected: rawM.rejected ?? 0,
+          });
+          setPositionStats(Array.isArray(json.data.positionStats) ? json.data.positionStats : []);
+          setGradYearStats(Array.isArray(json.data.gradYearStats) ? json.data.gradYearStats : []);
+          setRecentApplications(Array.isArray(json.data.recentApplications) ? json.data.recentApplications : []);
           return;
         }
       }
@@ -159,9 +171,11 @@ export default function AdminPage() {
       const res = await fetch(`/api/ca/admin/applications?${params.toString()}`);
       if (res.ok) {
         const json = await res.json();
-        if (json.success) {
-          setApplications(json.data.applications);
-          setTotalApps(json.data.pagination.total);
+        if (json.success && json.data) {
+          const appsList = Array.isArray(json.data.applications) ? json.data.applications : [];
+          setApplications(appsList);
+          const totalCount = json.data.pagination?.total ?? appsList.length;
+          setTotalApps(totalCount);
         }
       }
     } catch (err) {
@@ -469,7 +483,7 @@ export default function AdminPage() {
         <div className="max-w-7xl mx-auto flex items-center gap-1 overflow-x-auto py-2">
           {[
             { id: "overview", label: "Dashboard Overview" },
-            { id: "applicants", label: `Applicants (${totalApps || metrics.total})` },
+            { id: "applicants", label: `Applicants (${totalApps || metrics?.total || 0})` },
             { id: "analytics", label: "Analytics & Trends" },
             { id: "export", label: "Export Records" },
           ].map((tab) => {
@@ -505,7 +519,7 @@ export default function AdminPage() {
                   Total Applicants
                 </span>
                 <span className="text-3xl font-bold tracking-tight text-[#0B0C0E] block">
-                  {metrics.total}
+                  {metrics?.total || 0}
                 </span>
                 <span className="text-[11px] text-[#737883] mt-1 block">All registered cohorts</span>
               </div>
@@ -515,7 +529,7 @@ export default function AdminPage() {
                   BTech Engineering
                 </span>
                 <span className="text-3xl font-bold tracking-tight text-[#2F5BFF] block">
-                  {metrics.btech}
+                  {metrics?.btech || 0}
                 </span>
                 <span className="text-[11px] text-[#737883] mt-1 block">AI/ML &amp; Software</span>
               </div>
@@ -525,7 +539,7 @@ export default function AdminPage() {
                   MBA Commercial
                 </span>
                 <span className="text-3xl font-bold tracking-tight text-[#0B0C0E] block">
-                  {metrics.mba}
+                  {metrics?.mba || 0}
                 </span>
                 <span className="text-[11px] text-[#737883] mt-1 block">Sales &amp; Marketing</span>
               </div>
@@ -535,7 +549,7 @@ export default function AdminPage() {
                   Under Review
                 </span>
                 <span className="text-3xl font-bold tracking-tight text-amber-600 block">
-                  {metrics.underReview + metrics.submitted}
+                  {(metrics?.underReview || 0) + (metrics?.submitted || 0)}
                 </span>
                 <span className="text-[11px] text-[#737883] mt-1 block">Pending screening</span>
               </div>
@@ -545,7 +559,7 @@ export default function AdminPage() {
                   Shortlisted / Interview
                 </span>
                 <span className="text-3xl font-bold tracking-tight text-emerald-600 block">
-                  {metrics.shortlisted + metrics.interview}
+                  {(metrics?.shortlisted || 0) + (metrics?.interview || 0)}
                 </span>
                 <span className="text-[11px] text-[#737883] mt-1 block">Advancing candidates</span>
               </div>
@@ -613,7 +627,7 @@ export default function AdminPage() {
 
                 <div className="space-y-3">
                   {positionStats.map((pos) => {
-                    const percent = metrics.total > 0 ? Math.round((pos.count / metrics.total) * 100) : 0;
+                    const percent = (metrics?.total || 0) > 0 ? Math.round((pos.count / (metrics?.total || 1)) * 100) : 0;
                     return (
                       <div key={pos.position_name} className="space-y-1">
                         <div className="flex justify-between text-xs">
@@ -858,14 +872,15 @@ export default function AdminPage() {
 
                 <div className="space-y-3 pt-2">
                   {[
-                    { label: "Submitted", count: metrics.submitted, color: "bg-blue-500" },
-                    { label: "Under Review", count: metrics.underReview, color: "bg-amber-500" },
-                    { label: "Shortlisted", count: metrics.shortlisted, color: "bg-indigo-500" },
-                    { label: "Interview Scheduled", count: metrics.interview, color: "bg-purple-500" },
-                    { label: "Offer Selected", count: metrics.selected, color: "bg-emerald-500" },
-                    { label: "Rejected / Withdrawn", count: metrics.rejected, color: "bg-rose-500" },
+                    { label: "Submitted", count: metrics?.submitted || 0, color: "bg-blue-500" },
+                    { label: "Under Review", count: metrics?.underReview || 0, color: "bg-amber-500" },
+                    { label: "Shortlisted", count: metrics?.shortlisted || 0, color: "bg-indigo-500" },
+                    { label: "Interview Scheduled", count: metrics?.interview || 0, color: "bg-purple-500" },
+                    { label: "Offer Selected", count: metrics?.selected || 0, color: "bg-emerald-500" },
+                    { label: "Rejected / Withdrawn", count: metrics?.rejected || 0, color: "bg-rose-500" },
                   ].map((stage) => {
-                    const pct = metrics.total > 0 ? Math.round((stage.count / metrics.total) * 100) : 0;
+                    const totalCount = metrics?.total || 0;
+                    const pct = totalCount > 0 ? Math.round((stage.count / totalCount) * 100) : 0;
                     return (
                       <div key={stage.label} className="space-y-1">
                         <div className="flex justify-between text-xs">
@@ -895,7 +910,8 @@ export default function AdminPage() {
 
                 <div className="space-y-3 pt-2">
                   {gradYearStats.map((yr) => {
-                    const pct = metrics.total > 0 ? Math.round((yr.count / metrics.total) * 100) : 0;
+                    const totalCount = metrics?.total || 0;
+                    const pct = totalCount > 0 ? Math.round((yr.count / totalCount) * 100) : 0;
                     return (
                       <div key={yr.graduation_year} className="space-y-1">
                         <div className="flex justify-between text-xs">

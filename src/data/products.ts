@@ -268,7 +268,8 @@ export type HeroVisualType =
   | "growth_chart"
   | "education_path"
   | "iot_nodes"
-  | "neuro_chip_render";
+  | "neuro_chip_render"
+  | "ai_human_silhouette";
 
 export interface HeroFanCard {
   id: string;
@@ -337,13 +338,13 @@ export const HERO_FAN_CARDS: HeroFanCard[] = [
     sceneIndex: 2,
   },
   {
-    id: "hero-education",
-    label: "Education",
-    name: "Education Platforms",
-    promise: "Learning products for students and colleges, from VidyaSetu to Mentlearn.",
+    id: "hero-saadhyam",
+    label: "AI Workforce",
+    name: "Saadhyam Platform",
+    promise: "Build, deploy and manage AI Humans that work like employees at www.saadhyam.com.",
     description:
-      "Adaptive curriculum delivery, hands-on engineering workspaces, and institutional mastery certification.",
-    visualType: "education_path",
+      "Digital employees for voice calling, sales, marketing, operations, legal research, and enterprise automation.",
+    visualType: "ai_human_silhouette",
     accent: "#60A5FA",
     glowColor: "rgba(96, 165, 250, 0.28)",
     href: "#chapter-6",

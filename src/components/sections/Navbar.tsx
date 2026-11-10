@@ -14,7 +14,7 @@ export default function Navbar() {
     const handleScroll = () => {
       setScrolled(window.scrollY > 40);
 
-      // Detect if user is currently inside a light section (Chapter 5 Sovereign or Chapter 6 Mentlearn)
+      // Detect if user is currently inside a light section (Chapter 5 Sovereign or Chapter 6 Saadhyam)
       const ch5 = document.getElementById("chapter-5");
       const ch6 = document.getElementById("chapter-6");
       const scrollY = window.scrollY + 80;
@@ -112,7 +112,7 @@ export default function Navbar() {
               isLightSection ? "hover:text-ink" : "hover:text-white"
             }`}
           >
-            Mentlearn
+            Saadhyam
           </button>
         </nav>
 

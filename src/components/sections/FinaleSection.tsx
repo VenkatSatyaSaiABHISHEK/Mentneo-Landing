@@ -15,7 +15,7 @@ export default function FinaleSection() {
     "Neuro HGI 2.2 mm Silicon Partnership",
     "Enterprise Mentneo LLM & Voice Integration",
     "Saadhyam Autonomous Calling Fleet",
-    "Mentlearn Fellowship & Corporate Academy",
+    "Saadhyam AI Workforce Platform (www.saadhyam.com)",
   ];
 
   const handleSubmit = (e: React.FormEvent) => {

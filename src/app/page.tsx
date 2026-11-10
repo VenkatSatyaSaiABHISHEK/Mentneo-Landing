@@ -8,7 +8,7 @@ import TheShift from "@/components/sections/TheShift";
 import HorizontalJourney from "@/components/sections/HorizontalJourney";
 import NeuroChipSection from "@/components/sections/NeuroChipSection";
 import EnterpriseGov from "@/components/sections/EnterpriseGov";
-import MentlearnSection from "@/components/sections/MentlearnSection";
+import SaadhyamSection from "@/components/sections/SaadhyamSection";
 import FinaleSection from "@/components/sections/FinaleSection";
 
 export default function Home() {
@@ -42,8 +42,8 @@ export default function Home() {
         {/* Domains: Enterprise & Government (Self-Drawing Security Boundary) */}
         <EnterpriseGov />
 
-        {/* Academy: Mentlearn Engineering Academy (Draggable Course Rail) */}
-        <MentlearnSection />
+        {/* AI Workforce: Saadhyam Platform (AI Humans & Autonomous Workforce) */}
+        <SaadhyamSection />
 
         {/* Contact: Typographic Finale & Consultation */}
         <FinaleSection />

@@ -24,6 +24,8 @@ export default function HeroCardVisual({ type, accent }: HeroCardVisualProps) {
       return <IotNodesVisual accent={accent} />;
     case "neuro_chip_render":
       return <NeuroChipRenderVisual accent={accent} />;
+    case "ai_human_silhouette":
+      return <SaadhyamOrbVisual accent={accent} />;
     default:
       return <SaadhyamOrbVisual accent={accent} />;
   }

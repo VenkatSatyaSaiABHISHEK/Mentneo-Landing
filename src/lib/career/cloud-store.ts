@@ -367,19 +367,26 @@ export async function getDashboardOverviewMetrics() {
 
   const recentApplications = apps.slice(0, 8);
 
+  const metricsObj = {
+    total: apps.length,
+    totalApplicants: apps.length,
+    btech: btechTotal,
+    btechTotal,
+    mba: mbaTotal,
+    mbaTotal,
+    internship: internshipTotal,
+    internshipTotal,
+    underReview: statusMap["Under Review"] || 0,
+    shortlisted: statusMap["Shortlisted"] || 0,
+    interview: statusMap["Interview"] || 0,
+    selected: statusMap["Selected"] || 0,
+    rejected: statusMap["Rejected"] || 0,
+    submitted: statusMap["Submitted"] || 0,
+  };
+
   return {
-    overview: {
-      totalApplicants: apps.length,
-      btechTotal,
-      mbaTotal,
-      internshipTotal,
-      underReview: statusMap["Under Review"] || 0,
-      shortlisted: statusMap["Shortlisted"] || 0,
-      interview: statusMap["Interview"] || 0,
-      selected: statusMap["Selected"] || 0,
-      rejected: statusMap["Rejected"] || 0,
-      submitted: statusMap["Submitted"] || 0,
-    },
+    metrics: metricsObj,
+    overview: metricsObj,
     statusCounts: Object.entries(statusMap).map(([status, count]) => ({ status, count })),
     positionStats,
     gradYearStats,

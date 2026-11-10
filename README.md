@@ -14,7 +14,7 @@
 - **Interactive Showcase**: Live duplex voice audio visualizer with realistic latency & emotion badges, paired with an autonomous multi-agent task checklist ticking itself off in real time.
 - **Mascot Gallery Marquee**: Smooth infinite scrolling marquee featuring character stickers with expressive witty quotes on hover.
 - **Trust Strip**: Global R&D hubs (Hyderabad, Kakinada, US, UK) and air-gapped sovereign deployment credentials with animated counters.
-- **Mentlearn Academy**: Glass course cards with curriculum breakdowns and interactive enrollment with celebratory confetti.
+- **Saadhyam AI Workforce**: Interactive showcase of autonomous AI Humans (Sara, Diya, Valmiki, Rudra, Law AI) from [www.saadhyam.com](https://www.saadhyam.com).
 - **Final Watermark CTA & Footer**: Faint outlined "MENTNEO" watermark, mascot speech bubble, priority early-access form, and full glass footer.
 
 ---
