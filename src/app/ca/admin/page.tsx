@@ -123,9 +123,14 @@ export default function AdminPage() {
     checkSession();
   }, []);
 
-  const checkSession = async () => {
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const checkSession = useCallback(async () => {
     try {
-      const res = await fetch("/api/ca/admin/dashboard");
+      const res = await fetch(`/api/ca/admin/dashboard?t=${Date.now()}`, {
+        cache: "no-store",
+        headers: { "Cache-Control": "no-cache" },
+      });
       if (res.ok) {
         const json = await res.json();
         if (json.success && json.data) {
@@ -153,7 +158,7 @@ export default function AdminPage() {
     } catch {
       setIsAuthenticated(false);
     }
-  };
+  }, []);
 
   const loadApplications = useCallback(async (overrideSearch?: string) => {
     setListLoading(true);
@@ -166,9 +171,13 @@ export default function AdminPage() {
         status: statusFilter,
         gradYear: gradYearFilter,
         search: query,
+        t: Date.now().toString(),
       });
 
-      const res = await fetch(`/api/ca/admin/applications?${params.toString()}`);
+      const res = await fetch(`/api/ca/admin/applications?${params.toString()}`, {
+        cache: "no-store",
+        headers: { "Cache-Control": "no-cache" },
+      });
       if (res.ok) {
         const json = await res.json();
         if (json.success && json.data) {
@@ -184,6 +193,22 @@ export default function AdminPage() {
       setListLoading(false);
     }
   }, [currentPage, typeFilter, statusFilter, gradYearFilter, searchQuery]);
+
+  const handleManualRefresh = async () => {
+    setIsRefreshing(true);
+    await Promise.all([checkSession(), loadApplications()]);
+    setTimeout(() => setIsRefreshing(false), 500);
+  };
+
+  // Real-time polling: auto-refresh candidates every 10 seconds
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    const interval = setInterval(() => {
+      checkSession();
+      loadApplications();
+    }, 10000);
+    return () => clearInterval(interval);
+  }, [isAuthenticated, checkSession, loadApplications]);
 
   // Load applicants list when switching to applicants tab or changing filters
   useEffect(() => {
@@ -462,6 +487,16 @@ export default function AdminPage() {
           </div>
 
           <div className="flex items-center gap-3">
+            <button
+              onClick={handleManualRefresh}
+              disabled={isRefreshing}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-[#E9E7E1] bg-white text-xs font-mono text-[#0B0C0E] hover:border-[#0B0C0E]/40 hover:bg-[#FAFAFA] transition-all shadow-sm"
+              title="Refresh candidate data now"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? "animate-spin text-[#2F5BFF]" : "text-[#737883]"}`} />
+              <span className="hidden sm:inline">{isRefreshing ? "Updating..." : "Live Refresh"}</span>
+            </button>
+
             <div className="hidden sm:flex items-center gap-2 px-3 py-1 rounded-full border border-[#10B981]/30 bg-[#10B981]/[0.08] text-[11px] font-mono text-[#059669]">
               <span className="w-1.5 h-1.5 rounded-full bg-[#10B981] animate-pulse" />
               <span>Session Authenticated</span>
@@ -788,7 +823,7 @@ export default function AdminPage() {
                           </td>
                           <td className="py-3 px-4">
                             <div className="flex flex-wrap gap-1 max-w-xs">
-                              {app.positions.slice(0, 2).map((pos, pI) => (
+                              {(app.positions || []).slice(0, 2).map((pos, pI) => (
                                 <span
                                   key={pI}
                                   className="text-[10px] px-1.5 py-0.5 rounded bg-[#FAFAFA] border border-[#E9E7E1] text-[#4A4E57] line-clamp-1"
@@ -796,9 +831,9 @@ export default function AdminPage() {
                                   {pos}
                                 </span>
                               ))}
-                              {app.positions.length > 2 && (
+                              {(app.positions || []).length > 2 && (
                                 <span className="text-[10px] text-[#737883]">
-                                  +{app.positions.length - 2}
+                                  +{(app.positions || []).length - 2}
                                 </span>
                               )}
                             </div>
@@ -1131,7 +1166,7 @@ export default function AdminPage() {
                 <div className="pt-2 border-t border-[#E9E7E1]">
                   <span className="text-[#737883] text-xs block mb-1">Applied Roles:</span>
                   <div className="flex flex-wrap gap-1.5">
-                    {selectedApp.positions.map((p: string, i: number) => (
+                    {(selectedApp.positions || []).map((p: string, i: number) => (
                       <span
                         key={i}
                         className="px-2 py-0.5 rounded-md bg-white border border-[#E9E7E1] text-xs font-medium text-[#0B0C0E]"

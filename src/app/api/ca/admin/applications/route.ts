@@ -60,18 +60,25 @@ export async function GET(req: NextRequest) {
     const offset = (page - 1) * limit;
     const paginated = all.slice(offset, offset + limit);
 
-    return NextResponse.json({
-      success: true,
-      data: {
-        applications: paginated,
-        pagination: {
-          total,
-          page,
-          limit,
-          totalPages,
+    return NextResponse.json(
+      {
+        success: true,
+        data: {
+          applications: paginated,
+          pagination: {
+            total,
+            page,
+            limit,
+            totalPages,
+          },
         },
       },
-    });
+      {
+        headers: {
+          "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+        },
+      }
+    );
   } catch (err: unknown) {
     console.error("Error querying applications:", (err as Error).message);
     return NextResponse.json(

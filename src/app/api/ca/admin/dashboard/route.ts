@@ -13,10 +13,17 @@ export async function GET(req: NextRequest) {
 
   try {
     const data = await getDashboardOverviewMetrics();
-    return NextResponse.json({
-      success: true,
-      data,
-    });
+    return NextResponse.json(
+      {
+        success: true,
+        data,
+      },
+      {
+        headers: {
+          "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+        },
+      }
+    );
   } catch (err: unknown) {
     console.error("Dashboard overview calculation error:", (err as Error).message);
     return NextResponse.json(
