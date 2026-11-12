@@ -18,11 +18,11 @@ export default function CareerFooter() {
 
         {/* Links */}
         <div className="flex flex-wrap items-center gap-6 text-xs text-[#555555]">
-          <Link href="/career/apply/btech" className="hover:text-black transition-colors">
-            Apply: B.Tech (Machine Learning)
+          <Link href="/career#btech" className="hover:text-black transition-colors">
+            B.Tech ML (Closed)
           </Link>
-          <Link href="/career/apply/mba" className="hover:text-black transition-colors">
-            Apply: MBA Role
+          <Link href="/career#mba" className="hover:text-black transition-colors">
+            MBA Role (Closed)
           </Link>
           <a
             href="mailto:careers@mentneo.ai"

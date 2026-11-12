@@ -57,14 +57,11 @@ export default function CareerNavbar() {
           </Link>
         </nav>
 
-        {/* Clean 2 Openings Indicator */}
+        {/* Applications Closed Indicator */}
         <div className="hidden sm:flex items-center">
-          <a
-            href="#openings"
-            className="px-3.5 py-1.5 rounded-full border border-[#E5E5E5] bg-[#FBFBFA] text-[#111111] text-xs font-medium hover:border-black transition-all"
-          >
-            2 Openings Active
-          </a>
+          <span className="px-3.5 py-1.5 rounded-full border border-amber-500/30 bg-amber-50 text-amber-800 text-xs font-medium">
+            Applications Closed
+          </span>
         </div>
 
         {/* Mobile menu toggle */}

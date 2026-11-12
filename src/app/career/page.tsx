@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useEffect, useRef } from "react";
-import Link from "next/link";
 import { motion } from "framer-motion";
 import CareerNavbar from "@/components/career/CareerNavbar";
 import CareerFooter from "@/components/career/CareerFooter";
@@ -84,7 +83,7 @@ export default function CareerPortalPage() {
               onClick={scrollToOpenings}
               className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full bg-black text-white text-xs font-semibold hover:bg-[#222222] transition-all shadow-sm"
             >
-              <span>View 2 Openings</span>
+              <span>View Roles (Applications Closed)</span>
               <ArrowRight className="w-4 h-4" />
             </button>
           </motion.div>
@@ -97,14 +96,21 @@ export default function CareerPortalPage() {
           {/* Section Header */}
           <div className="text-center mb-12">
             <span className="text-xs font-mono uppercase tracking-wider text-[#777777] block mb-2">
-              Current Openings (2)
+              2026 Recruitment Cohort
             </span>
             <h2 className="text-3xl sm:text-4xl font-normal tracking-tight text-black">
-              Select Your Career Track
+              Career Tracks &amp; Positions
             </h2>
             <p className="mt-2 text-sm text-[#666666]">
-              Two dedicated openings for B.Tech engineers and MBA graduates in Hyderabad.
+              Applications for the 2026 hiring cycle are officially closed.
             </p>
+            {/* Prominent Closed Notice Banner */}
+            <div className="mt-6 inline-flex items-center gap-3 px-5 py-3.5 rounded-xl border border-amber-500/30 bg-amber-500/5 text-amber-900 text-xs text-left max-w-xl mx-auto shadow-sm">
+              <span className="w-2 h-2 rounded-full bg-amber-500 shrink-0 animate-pulse" />
+              <span>
+                <strong>Applications Window Closed:</strong> Both B.Tech ML and MBA candidate registrations have concluded. All submitted profiles are currently undergoing screening by the recruitment board.
+              </span>
+            </div>
           </div>
 
           {/* Exactly 2 Clean Cards Side-by-Side */}
@@ -117,8 +123,11 @@ export default function CareerPortalPage() {
               <div>
                 {/* Tags row */}
                 <div className="flex flex-wrap items-center gap-2 mb-5">
-                  <span className="px-3 py-1 rounded-full bg-black text-white text-[11px] font-semibold tracking-wide">
-                    B.Tech Opening
+                  <span className="px-3 py-1 rounded-full bg-[#111111] text-white text-[11px] font-semibold tracking-wide">
+                    B.Tech
+                  </span>
+                  <span className="px-3 py-1 rounded-full border border-amber-500/30 bg-amber-50 text-amber-800 text-[11px] font-semibold">
+                    Applications Closed
                   </span>
                   <span className="px-3 py-1 rounded-full border border-[#E5E5E5] bg-[#FBFBFA] text-[#444444] text-[11px] font-medium">
                     Machine Learning
@@ -191,13 +200,11 @@ export default function CareerPortalPage() {
 
               {/* Action Button */}
               <div className="mt-8 pt-4">
-                <Link
-                  href="/career/apply/btech"
-                  className="w-full inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-black text-white text-xs font-semibold hover:bg-[#222222] transition-colors"
+                <div
+                  className="w-full inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-[#F4F4F5] text-[#71717A] text-xs font-semibold cursor-not-allowed border border-[#E4E4E7]"
                 >
-                  <span>Apply for B.Tech ML Role</span>
-                  <ArrowRight className="w-4 h-4" />
-                </Link>
+                  <span>Applications Closed · 2026 Cohort</span>
+                </div>
               </div>
             </div>
 
@@ -209,8 +216,11 @@ export default function CareerPortalPage() {
               <div>
                 {/* Tags row */}
                 <div className="flex flex-wrap items-center gap-2 mb-5">
-                  <span className="px-3 py-1 rounded-full bg-black text-white text-[11px] font-semibold tracking-wide">
-                    MBA Opening
+                  <span className="px-3 py-1 rounded-full bg-[#111111] text-white text-[11px] font-semibold tracking-wide">
+                    MBA
+                  </span>
+                  <span className="px-3 py-1 rounded-full border border-amber-500/30 bg-amber-50 text-amber-800 text-[11px] font-semibold">
+                    Applications Closed
                   </span>
                   <span className="px-3 py-1 rounded-full border border-[#E5E5E5] bg-[#FBFBFA] text-[#444444] text-[11px] font-medium">
                     Management &amp; Growth
@@ -282,13 +292,11 @@ export default function CareerPortalPage() {
 
               {/* Action Button */}
               <div className="mt-8 pt-4">
-                <Link
-                  href="/career/apply/mba"
-                  className="w-full inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-black text-white text-xs font-semibold hover:bg-[#222222] transition-colors"
+                <div
+                  className="w-full inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-[#F4F4F5] text-[#71717A] text-xs font-semibold cursor-not-allowed border border-[#E4E4E7]"
                 >
-                  <span>Apply for MBA Role</span>
-                  <ArrowRight className="w-4 h-4" />
-                </Link>
+                  <span>Applications Closed · 2026 Cohort</span>
+                </div>
               </div>
             </div>
           </div>
