@@ -5,9 +5,35 @@ import Link from "next/link";
 import Logo from "@/components/ui/Logo";
 import { Menu, X } from "lucide-react";
 
-export default function CareerNavbar() {
+interface CareerNavbarProps {
+  isOpen?: boolean;
+}
+
+export default function CareerNavbar({ isOpen }: CareerNavbarProps) {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [dynamicOpen, setDynamicOpen] = useState<boolean>(isOpen !== undefined ? isOpen : true);
+
+  useEffect(() => {
+    if (isOpen !== undefined) {
+      setDynamicOpen(isOpen);
+      return;
+    }
+
+    async function checkStatus() {
+      try {
+        const res = await fetch(`/api/career/form-config?t=${Date.now()}`, { cache: "no-store" });
+        if (res.ok) {
+          const json = await res.json();
+          if (json.success && json.data) {
+            const open = json.data.globalOpen && (json.data.btech.isOpen || json.data.mba.isOpen);
+            setDynamicOpen(open);
+          }
+        }
+      } catch {}
+    }
+    checkStatus();
+  }, [isOpen]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -57,11 +83,18 @@ export default function CareerNavbar() {
           </Link>
         </nav>
 
-        {/* Applications Closed Indicator */}
+        {/* Live Dynamic Applications Status Indicator */}
         <div className="hidden sm:flex items-center">
-          <span className="px-3.5 py-1.5 rounded-full border border-amber-500/30 bg-amber-50 text-amber-800 text-xs font-medium">
-            Applications Closed
-          </span>
+          {dynamicOpen ? (
+            <span className="px-3.5 py-1.5 rounded-full border border-emerald-500/30 bg-emerald-50 text-emerald-800 text-xs font-medium flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              Applications Open
+            </span>
+          ) : (
+            <span className="px-3.5 py-1.5 rounded-full border border-amber-500/30 bg-amber-50 text-amber-800 text-xs font-medium">
+              Applications Closed
+            </span>
+          )}
         </div>
 
         {/* Mobile menu toggle */}
@@ -98,6 +131,18 @@ export default function CareerNavbar() {
           >
             Mentneo Main Website ↗
           </Link>
+          <div className="pt-2 border-t border-[#EAEAEA]">
+            {dynamicOpen ? (
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-emerald-500/30 bg-emerald-50 text-emerald-800 text-xs font-medium">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                Applications Open
+              </span>
+            ) : (
+              <span className="inline-flex items-center px-3 py-1 rounded-full border border-amber-500/30 bg-amber-50 text-amber-800 text-xs font-medium">
+                Applications Closed
+              </span>
+            )}
+          </div>
         </div>
       )}
     </header>

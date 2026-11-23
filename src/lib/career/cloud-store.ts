@@ -213,10 +213,16 @@ async function getApplicationsFromSupabaseRest(): Promise<StoredApplication[]> {
       posMap[p.application_reference].push(p.position_name);
     }
 
-    return apps.map((a) => ({
-      ...a,
-      positions: posMap[a.application_reference] || [],
-    }));
+    return apps.map((raw) => {
+      const a = raw as unknown as StoredApplication;
+      return {
+        ...a,
+        cohort_id: a.cohort_id || "bin-1",
+        cohort_name: a.cohort_name || "KIET Group of Institutions (Nov 2026 Archive)",
+        college_name: a.college_name || "KIET Group of Institutions",
+        positions: posMap[a.application_reference] || [],
+      };
+    });
   } catch (err) {
     console.warn("[CloudStore] Supabase REST fetch error:", (err as Error).message);
     return [];
@@ -316,7 +322,10 @@ export async function getAllStoredApplications(): Promise<StoredApplication[]> {
   for (const a of list) {
     if (!a.cohort_id) {
       a.cohort_id = "bin-1";
-      a.cohort_name = "Initial Hiring Cohort (Nov 2026 Archive)";
+      a.cohort_name = "KIET Group of Institutions (Nov 2026 Archive)";
+    }
+    if (!a.college_name) {
+      a.college_name = "KIET Group of Institutions";
     }
   }
   list.sort((a, b) => new Date(b.submitted_at || 0).getTime() - new Date(a.submitted_at || 0).getTime());
@@ -361,7 +370,7 @@ export async function persistNewApplication(
       full_name: app.full_name,
       email: app.email,
       mobile: app.mobile,
-      college_name: app.college_name,
+      college_name: app.college_name || "KIET Group of Institutions",
       college_roll_number: app.college_roll_number,
       branch: app.branch,
       mba_specialization: app.mba_specialization,
@@ -378,9 +387,6 @@ export async function persistNewApplication(
       application_status: app.application_status || "Submitted",
       submitted_at: app.submitted_at,
       updated_at: app.updated_at,
-      cohort_id: cohortId,
-      cohort_name: cohortName,
-      custom_fields: customFields ? JSON.stringify(customFields) : null,
     };
 
     const res = await fetch(`${SUPABASE_URL}/rest/v1/applications`, {

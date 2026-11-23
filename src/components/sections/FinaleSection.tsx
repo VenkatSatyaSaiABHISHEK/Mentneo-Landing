@@ -95,8 +95,8 @@ export default function FinaleSection() {
             className="hover:text-white transition-colors flex items-center gap-1.5 text-white/80 hover:underline underline-offset-4"
           >
             <span>Careers</span>
-            <span className="text-[9px] px-1.5 py-0.5 rounded-full border border-amber-400/30 bg-amber-400/10 text-amber-300">
-              Applications Closed
+            <span className="text-[9px] px-1.5 py-0.5 rounded-full border border-emerald-400/30 bg-emerald-400/10 text-emerald-300">
+              We&apos;re Hiring
             </span>
           </Link>
           <span>·</span>

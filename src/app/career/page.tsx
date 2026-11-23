@@ -57,8 +57,8 @@ export default function CareerPortalPage() {
 
   return (
     <div className="min-h-screen bg-white text-[#111111] flex flex-col justify-between selection:bg-black selection:text-white antialiased font-sans">
-      {/* Clean White Google/OpenAI Style Career Navbar */}
-      <CareerNavbar />
+      {/* Clean White Google/OpenAI Style Career Navbar with live status */}
+      <CareerNavbar isOpen={anyOpen} />
 
       <main className="flex-1 pt-28 pb-20">
         {/* =========================================================================

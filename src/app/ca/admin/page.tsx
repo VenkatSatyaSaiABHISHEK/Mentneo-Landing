@@ -156,6 +156,7 @@ export default function AdminPage() {
   // Check current session on mount
   useEffect(() => {
     checkSession();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const [isRefreshing, setIsRefreshing] = useState(false);

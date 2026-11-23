@@ -16,6 +16,7 @@ import {
   ShieldCheck,
   Mail,
   X,
+  Download,
 } from "lucide-react";
 
 interface FormFieldConfig {
@@ -196,8 +197,8 @@ export default function BTechApplyDynamicPage() {
       if (isFieldEnabled("branch") && isFieldRequired("branch", true) && !formData.branch.trim()) {
         errs.branch = "Engineering branch is mandatory to proceed.";
       }
-      if (isFieldEnabled("collegeName") && isFieldRequired("collegeName", false) && !formData.collegeName.trim()) {
-        errs.collegeName = "College name is mandatory to proceed.";
+      if (isFieldEnabled("collegeName", true) && isFieldRequired("collegeName", true) && !formData.collegeName.trim()) {
+        errs.collegeName = "College / University name is mandatory to proceed.";
       }
       if (isFieldEnabled("currentCgpa") && isFieldRequired("currentCgpa", true) && !formData.currentCgpa.trim()) {
         errs.currentCgpa = "Current CGPA is mandatory to proceed.";
@@ -435,6 +436,310 @@ export default function BTechApplyDynamicPage() {
     );
   }
 
+  const handleDownloadSlip = () => {
+    if (!submissionResult) return;
+    const refCode = submissionResult.reference || "MNT-2026-BT";
+    const cohort = submissionResult.cohortName || "KIET Group of Institutions (Nov 2026 Archive)";
+    const dateStr = new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata", dateStyle: "long", timeStyle: "medium" });
+
+    const slipHtml = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Application Slip - ${refCode} - Mentneo</title>
+  <style>
+    @page { size: A4 portrait; margin: 15mm; }
+    * { box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      color: #0F172A;
+      background: #FFFFFF;
+      margin: 0;
+      padding: 24px;
+      line-height: 1.5;
+    }
+    .container {
+      max-width: 720px;
+      margin: 0 auto;
+      border: 2px solid #0F172A;
+      border-radius: 12px;
+      padding: 32px;
+      background: #FFFFFF;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid #E2E8F0;
+      padding-bottom: 20px;
+      margin-bottom: 24px;
+    }
+    .brand-title {
+      font-size: 24px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      color: #0F172A;
+      margin: 0;
+    }
+    .brand-sub {
+      font-size: 11px;
+      font-family: ui-monospace, monospace;
+      color: #64748B;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      margin-top: 4px;
+    }
+    .status-badge {
+      display: inline-block;
+      padding: 6px 14px;
+      background: #ECFDF5;
+      color: #065F46;
+      border: 1px solid #A7F3D0;
+      border-radius: 9999px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .ref-box {
+      background: #F8FAFC;
+      border: 1.5px dashed #CBD5E1;
+      border-radius: 10px;
+      padding: 16px 20px;
+      margin-bottom: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .ref-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      font-family: ui-monospace, monospace;
+      color: #64748B;
+      margin-bottom: 4px;
+    }
+    .ref-val {
+      font-size: 22px;
+      font-weight: 800;
+      font-family: ui-monospace, monospace;
+      color: #2563EB;
+      letter-spacing: 1px;
+    }
+    .cohort-badge {
+      font-size: 11px;
+      font-weight: 600;
+      color: #475569;
+      background: #FFFFFF;
+      border: 1px solid #E2E8F0;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-family: ui-monospace, monospace;
+    }
+    .section-title {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #334155;
+      border-bottom: 1px solid #E2E8F0;
+      padding-bottom: 6px;
+      margin-top: 20px;
+      margin-bottom: 14px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px 20px;
+    }
+    .field {
+      display: flex;
+      flex-direction: column;
+    }
+    .field-lbl {
+      font-size: 11px;
+      font-weight: 600;
+      color: #64748B;
+      text-transform: uppercase;
+      margin-bottom: 2px;
+    }
+    .field-val {
+      font-size: 13px;
+      font-weight: 600;
+      color: #0F172A;
+      word-break: break-word;
+    }
+    .footer {
+      margin-top: 32px;
+      padding-top: 18px;
+      border-top: 1px dashed #CBD5E1;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      font-size: 11px;
+      color: #64748B;
+    }
+    .seal-box {
+      text-align: right;
+    }
+    .seal-stamp {
+      font-family: ui-monospace, monospace;
+      font-size: 10px;
+      color: #059669;
+      font-weight: 700;
+      border: 1px solid #059669;
+      padding: 4px 8px;
+      border-radius: 4px;
+      display: inline-block;
+      margin-bottom: 4px;
+      background: #ECFDF5;
+    }
+    .print-bar {
+      margin-bottom: 16px;
+      text-align: right;
+    }
+    .print-btn {
+      background: #0F172A;
+      color: #FFFFFF;
+      padding: 8px 16px;
+      border: none;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    @media print {
+      .no-print { display: none !important; }
+      body { padding: 0; }
+      .container { border: 1px solid #94A3B8; }
+    }
+  </style>
+</head>
+<body>
+  <div class="no-print print-bar">
+    <button class="print-btn" onclick="window.print()">Print / Save as PDF</button>
+  </div>
+  <div class="container">
+    <div class="header">
+      <div>
+        <h1 class="brand-title">MENTNEO</h1>
+        <div class="brand-sub">Sovereign Artificial Intelligence · Candidate Registration Slip</div>
+      </div>
+      <div>
+        <span class="status-badge">✓ Confirmed &amp; Lodged</span>
+      </div>
+    </div>
+
+    <div class="ref-box">
+      <div>
+        <div class="ref-label">Application Reference Number</div>
+        <div class="ref-val">${refCode}</div>
+      </div>
+      <div>
+        <span class="cohort-badge">${cohort}</span>
+      </div>
+    </div>
+
+    <div class="section-title">Applicant Credentials</div>
+    <div class="grid">
+      <div class="field">
+        <span class="field-lbl">Full Legal Name</span>
+        <span class="field-val">${formData.fullName}</span>
+      </div>
+      <div class="field">
+        <span class="field-lbl">Email Address</span>
+        <span class="field-val">${formData.email}</span>
+      </div>
+      <div class="field">
+        <span class="field-lbl">Mobile Contact</span>
+        <span class="field-val">${formData.mobile}</span>
+      </div>
+      <div class="field">
+        <span class="field-lbl">Application Track</span>
+        <span class="field-val">B.Tech Engineering (2026 Batch)</span>
+      </div>
+    </div>
+
+    <div class="section-title">Academic Details</div>
+    <div class="grid">
+      <div class="field">
+        <span class="field-lbl">College / University</span>
+        <span class="field-val">${formData.collegeName || "KIET Group of Institutions"}</span>
+      </div>
+      <div class="field">
+        <span class="field-lbl">College Roll Number</span>
+        <span class="field-val">${formData.collegeRollNumber}</span>
+      </div>
+      <div class="field">
+        <span class="field-lbl">Branch / Specialization</span>
+        <span class="field-val">${formData.branch}</span>
+      </div>
+      <div class="field">
+        <span class="field-lbl">Cumulative CGPA</span>
+        <span class="field-val">${formData.currentCgpa}</span>
+      </div>
+      <div class="field">
+        <span class="field-lbl">Graduation Batch</span>
+        <span class="field-val">${formData.graduationYear}</span>
+      </div>
+      <div class="field">
+        <span class="field-lbl">Relocation Willingness</span>
+        <span class="field-val">${formData.relocationWillingness} (Hyderabad HQ)</span>
+      </div>
+    </div>
+
+    <div class="section-title">Selected Track &amp; Telemetry</div>
+    <div class="grid">
+      <div class="field">
+        <span class="field-lbl">Target Role(s)</span>
+        <span class="field-val">${(formData.positions || []).join(", ") || "Machine Learning Engineer"}</span>
+      </div>
+      <div class="field">
+        <span class="field-lbl">Registration Timestamp</span>
+        <span class="field-val">${dateStr}</span>
+      </div>
+    </div>
+
+    <div class="footer">
+      <div>
+        <div>Mentneo Research Labs · Hyderabad, India</div>
+        <div style="font-size: 10px; color: #94A3B8; margin-top: 2px;">Retain this slip for campus placement verification and interview rounds.</div>
+      </div>
+      <div class="seal-box">
+        <div class="seal-stamp">OFFICIAL CANDIDATE REGISTRY</div>
+        <div style="font-family: ui-monospace, monospace; font-size: 10px; color: #94A3B8;">HASH: ${refCode}-VERIFIED</div>
+      </div>
+    </div>
+  </div>
+  <script>
+    window.addEventListener("load", () => {
+      setTimeout(() => { window.print(); }, 350);
+    });
+  </script>
+</body>
+</html>`;
+
+    const printWin = window.open("", "_blank");
+    if (printWin) {
+      printWin.document.write(slipHtml);
+      printWin.document.close();
+    } else {
+      const iframe = document.createElement("iframe");
+      iframe.style.position = "fixed";
+      iframe.style.right = "0";
+      iframe.style.bottom = "0";
+      iframe.style.width = "0";
+      iframe.style.height = "0";
+      iframe.style.border = "none";
+      document.body.appendChild(iframe);
+      const doc = iframe.contentWindow?.document;
+      if (doc) {
+        doc.open();
+        doc.write(slipHtml);
+        doc.close();
+      }
+    }
+  };
+
   // Application Success Confirmation Screen
   if (submissionResult) {
     return (
@@ -505,6 +810,10 @@ export default function BTechApplyDynamicPage() {
                 <span className="text-[#0B0C0E] font-medium">BTech Hiring 2026</span>
                 <span>Positions:</span>
                 <span className="text-[#0B0C0E] font-medium">{formData.positions.join(", ")}</span>
+                <span>College:</span>
+                <span className="text-[#0B0C0E] font-medium">{formData.collegeName || "KIET Group of Institutions"}</span>
+                <span>Roll Number:</span>
+                <span className="text-[#0B0C0E] font-mono">{formData.collegeRollNumber}</span>
                 <span>Email:</span>
                 <span className="text-[#0B0C0E] font-mono">{formData.email}</span>
                 <span>Graduation Batch:</span>
@@ -512,13 +821,24 @@ export default function BTechApplyDynamicPage() {
               </div>
             </div>
 
-            <Link
-              href="/career"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#0B0C0E] text-white text-xs font-semibold hover:bg-black transition-colors"
-            >
-              <span>Return to Careers Hub</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </Link>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+              <button
+                type="button"
+                onClick={handleDownloadSlip}
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-[#2F5BFF] text-white text-xs font-semibold hover:bg-blue-600 transition-colors shadow-sm"
+              >
+                <Download className="w-3.5 h-3.5" />
+                <span>Download Application Slip (PDF)</span>
+              </button>
+
+              <Link
+                href="/career"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-full bg-[#0B0C0E] text-white text-xs font-semibold hover:bg-black transition-colors"
+              >
+                <span>Return to Careers Hub</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+            </div>
           </motion.div>
         </main>
       </div>
@@ -601,9 +921,8 @@ export default function BTechApplyDynamicPage() {
                       value={formData.fullName}
                       onChange={(e) => updateField("fullName", e.target.value)}
                       placeholder={getFieldConfig("fullName")?.placeholder || "e.g. John Doe"}
-                      className={`w-full px-4 py-2.5 rounded-xl border text-xs text-[#0B0C0E] bg-[#FAFAFA] focus:outline-none focus:bg-white transition-all ${
-                        errors.fullName ? "border-rose-400 bg-rose-50/20" : "border-[#E9E7E1] focus:border-[#0B0C0E]"
-                      }`}
+                      className={`w-full px-4 py-2.5 rounded-xl border text-xs text-[#0B0C0E] bg-[#FAFAFA] focus:outline-none focus:bg-white transition-all ${errors.fullName ? "border-rose-400 bg-rose-50/20" : "border-[#E9E7E1] focus:border-[#0B0C0E]"
+                        }`}
                     />
                     {errors.fullName && <p className="text-[11px] text-rose-600 mt-1">{errors.fullName}</p>}
                   </div>
@@ -619,9 +938,8 @@ export default function BTechApplyDynamicPage() {
                       value={formData.email}
                       onChange={(e) => updateField("email", e.target.value)}
                       placeholder={getFieldConfig("email")?.placeholder || "e.g. john@university.edu"}
-                      className={`w-full px-4 py-2.5 rounded-xl border text-xs text-[#0B0C0E] bg-[#FAFAFA] focus:outline-none focus:bg-white transition-all ${
-                        errors.email ? "border-rose-400 bg-rose-50/20" : "border-[#E9E7E1] focus:border-[#0B0C0E]"
-                      }`}
+                      className={`w-full px-4 py-2.5 rounded-xl border text-xs text-[#0B0C0E] bg-[#FAFAFA] focus:outline-none focus:bg-white transition-all ${errors.email ? "border-rose-400 bg-rose-50/20" : "border-[#E9E7E1] focus:border-[#0B0C0E]"
+                        }`}
                     />
                     {errors.email && <p className="text-[11px] text-rose-600 mt-1">{errors.email}</p>}
                   </div>
@@ -637,9 +955,8 @@ export default function BTechApplyDynamicPage() {
                       value={formData.mobile}
                       onChange={(e) => updateField("mobile", e.target.value)}
                       placeholder={getFieldConfig("mobile")?.placeholder || "e.g. +91 98765 43210"}
-                      className={`w-full px-4 py-2.5 rounded-xl border text-xs text-[#0B0C0E] bg-[#FAFAFA] focus:outline-none focus:bg-white transition-all ${
-                        errors.mobile ? "border-rose-400 bg-rose-50/20" : "border-[#E9E7E1] focus:border-[#0B0C0E]"
-                      }`}
+                      className={`w-full px-4 py-2.5 rounded-xl border text-xs text-[#0B0C0E] bg-[#FAFAFA] focus:outline-none focus:bg-white transition-all ${errors.mobile ? "border-rose-400 bg-rose-50/20" : "border-[#E9E7E1] focus:border-[#0B0C0E]"
+                        }`}
                     />
                     {errors.mobile && <p className="text-[11px] text-rose-600 mt-1">{errors.mobile}</p>}
                   </div>
@@ -655,9 +972,8 @@ export default function BTechApplyDynamicPage() {
                       value={formData.collegeRollNumber}
                       onChange={(e) => updateField("collegeRollNumber", e.target.value)}
                       placeholder={getFieldConfig("collegeRollNumber")?.placeholder || "e.g. 21B01A0501"}
-                      className={`w-full px-4 py-2.5 rounded-xl border text-xs text-[#0B0C0E] bg-[#FAFAFA] focus:outline-none focus:bg-white transition-all ${
-                        errors.collegeRollNumber ? "border-rose-400 bg-rose-50/20" : "border-[#E9E7E1] focus:border-[#0B0C0E]"
-                      }`}
+                      className={`w-full px-4 py-2.5 rounded-xl border text-xs text-[#0B0C0E] bg-[#FAFAFA] focus:outline-none focus:bg-white transition-all ${errors.collegeRollNumber ? "border-rose-400 bg-rose-50/20" : "border-[#E9E7E1] focus:border-[#0B0C0E]"
+                        }`}
                     />
                     {errors.collegeRollNumber && <p className="text-[11px] text-rose-600 mt-1">{errors.collegeRollNumber}</p>}
                   </div>
@@ -691,27 +1007,25 @@ export default function BTechApplyDynamicPage() {
                       value={formData.branch}
                       onChange={(e) => updateField("branch", e.target.value)}
                       placeholder={getFieldConfig("branch")?.placeholder || "e.g. Computer Science (AI & ML)"}
-                      className={`w-full px-4 py-2.5 rounded-xl border text-xs text-[#0B0C0E] bg-[#FAFAFA] focus:outline-none focus:bg-white transition-all ${
-                        errors.branch ? "border-rose-400 bg-rose-50/20" : "border-[#E9E7E1] focus:border-[#0B0C0E]"
-                      }`}
+                      className={`w-full px-4 py-2.5 rounded-xl border text-xs text-[#0B0C0E] bg-[#FAFAFA] focus:outline-none focus:bg-white transition-all ${errors.branch ? "border-rose-400 bg-rose-50/20" : "border-[#E9E7E1] focus:border-[#0B0C0E]"
+                        }`}
                     />
                     {errors.branch && <p className="text-[11px] text-rose-600 mt-1">{errors.branch}</p>}
                   </div>
                 )}
 
-                {isFieldEnabled("collegeName", false) && (
+                {isFieldEnabled("collegeName", true) && (
                   <div>
                     <label className="block text-xs font-medium text-[#0B0C0E] mb-1.5">
-                      College / University Name {isFieldRequired("collegeName", false) && <span className="text-rose-600">* (Mandatory)</span>}
+                      College / University Name {isFieldRequired("collegeName", true) && <span className="text-rose-600">* (Mandatory)</span>}
                     </label>
                     <input
                       type="text"
                       value={formData.collegeName}
                       onChange={(e) => updateField("collegeName", e.target.value)}
-                      placeholder={getFieldConfig("collegeName")?.placeholder || "e.g. National Institute of Technology"}
-                      className={`w-full px-4 py-2.5 rounded-xl border text-xs text-[#0B0C0E] bg-[#FAFAFA] focus:outline-none focus:bg-white transition-all ${
-                        errors.collegeName ? "border-rose-400 bg-rose-50/20" : "border-[#E9E7E1] focus:border-[#0B0C0E]"
-                      }`}
+                      placeholder={getFieldConfig("collegeName")?.placeholder || "e.g. KIET Group of Institutions"}
+                      className={`w-full px-4 py-2.5 rounded-xl border text-xs text-[#0B0C0E] bg-[#FAFAFA] focus:outline-none focus:bg-white transition-all ${errors.collegeName ? "border-rose-400 bg-rose-50/20" : "border-[#E9E7E1] focus:border-[#0B0C0E]"
+                        }`}
                     />
                     {errors.collegeName && <p className="text-[11px] text-rose-600 mt-1">{errors.collegeName}</p>}
                   </div>
@@ -728,9 +1042,8 @@ export default function BTechApplyDynamicPage() {
                         value={formData.currentCgpa}
                         onChange={(e) => updateField("currentCgpa", e.target.value)}
                         placeholder={getFieldConfig("currentCgpa")?.placeholder || "e.g. 8.75 / 10"}
-                        className={`w-full px-4 py-2.5 rounded-xl border text-xs text-[#0B0C0E] bg-[#FAFAFA] focus:outline-none focus:bg-white transition-all ${
-                          errors.currentCgpa ? "border-rose-400 bg-rose-50/20" : "border-[#E9E7E1] focus:border-[#0B0C0E]"
-                        }`}
+                        className={`w-full px-4 py-2.5 rounded-xl border text-xs text-[#0B0C0E] bg-[#FAFAFA] focus:outline-none focus:bg-white transition-all ${errors.currentCgpa ? "border-rose-400 bg-rose-50/20" : "border-[#E9E7E1] focus:border-[#0B0C0E]"
+                          }`}
                       />
                       {errors.currentCgpa && <p className="text-[11px] text-rose-600 mt-1">{errors.currentCgpa}</p>}
                     </div>
@@ -816,9 +1129,8 @@ export default function BTechApplyDynamicPage() {
                       value={formData.technicalSkills}
                       onChange={(e) => updateField("technicalSkills", e.target.value)}
                       placeholder={getFieldConfig("technicalSkills")?.placeholder || "e.g. PyTorch, CUDA, HuggingFace, TensorRT, vLLM, DeepSpeed, LangChain, Vector DBs"}
-                      className={`w-full px-4 py-2.5 rounded-xl border text-xs text-[#0B0C0E] bg-[#FAFAFA] focus:outline-none focus:bg-white transition-all resize-none ${
-                        errors.technicalSkills ? "border-rose-400 bg-rose-50/20" : "border-[#E9E7E1] focus:border-[#0B0C0E]"
-                      }`}
+                      className={`w-full px-4 py-2.5 rounded-xl border text-xs text-[#0B0C0E] bg-[#FAFAFA] focus:outline-none focus:bg-white transition-all resize-none ${errors.technicalSkills ? "border-rose-400 bg-rose-50/20" : "border-[#E9E7E1] focus:border-[#0B0C0E]"
+                        }`}
                     />
                     {errors.technicalSkills && <p className="text-[11px] text-rose-600 mt-1">{errors.technicalSkills}</p>}
                   </div>
@@ -834,9 +1146,8 @@ export default function BTechApplyDynamicPage() {
                       value={formData.githubUrl}
                       onChange={(e) => updateField("githubUrl", e.target.value)}
                       placeholder="https://github.com/yourhandle"
-                      className={`w-full px-4 py-2.5 rounded-xl border text-xs text-[#0B0C0E] bg-[#FAFAFA] focus:outline-none focus:bg-white transition-all ${
-                        errors.githubUrl ? "border-rose-400 bg-rose-50/20" : "border-[#E9E7E1] focus:border-[#0B0C0E]"
-                      }`}
+                      className={`w-full px-4 py-2.5 rounded-xl border text-xs text-[#0B0C0E] bg-[#FAFAFA] focus:outline-none focus:bg-white transition-all ${errors.githubUrl ? "border-rose-400 bg-rose-50/20" : "border-[#E9E7E1] focus:border-[#0B0C0E]"
+                        }`}
                     />
                     {errors.githubUrl && <p className="text-[11px] text-rose-600 mt-1">{errors.githubUrl}</p>}
                   </div>
@@ -852,9 +1163,8 @@ export default function BTechApplyDynamicPage() {
                       value={formData.linkedinUrl}
                       onChange={(e) => updateField("linkedinUrl", e.target.value)}
                       placeholder="https://linkedin.com/in/yourhandle"
-                      className={`w-full px-4 py-2.5 rounded-xl border text-xs text-[#0B0C0E] bg-[#FAFAFA] focus:outline-none focus:bg-white transition-all ${
-                        errors.linkedinUrl ? "border-rose-400 bg-rose-50/20" : "border-[#E9E7E1] focus:border-[#0B0C0E]"
-                      }`}
+                      className={`w-full px-4 py-2.5 rounded-xl border text-xs text-[#0B0C0E] bg-[#FAFAFA] focus:outline-none focus:bg-white transition-all ${errors.linkedinUrl ? "border-rose-400 bg-rose-50/20" : "border-[#E9E7E1] focus:border-[#0B0C0E]"
+                        }`}
                     />
                     {errors.linkedinUrl && <p className="text-[11px] text-rose-600 mt-1">{errors.linkedinUrl}</p>}
                   </div>
@@ -891,11 +1201,10 @@ export default function BTechApplyDynamicPage() {
                           key={option}
                           type="button"
                           onClick={() => updateField("relocationWillingness", option as "Yes" | "No")}
-                          className={`p-4 rounded-2xl border text-center transition-all ${
-                            isSelected
-                              ? "border-[#0B0C0E] bg-[#0B0C0E] text-white font-semibold"
-                              : "border-[#E9E7E1] bg-[#FAFAFA] text-[#0B0C0E] hover:border-[#0B0C0E]/40"
-                          }`}
+                          className={`p-4 rounded-2xl border text-center transition-all ${isSelected
+                            ? "border-[#0B0C0E] bg-[#0B0C0E] text-white font-semibold"
+                            : "border-[#E9E7E1] bg-[#FAFAFA] text-[#0B0C0E] hover:border-[#0B0C0E]/40"
+                            }`}
                         >
                           <span className="text-sm">{option}</span>
                         </button>
@@ -937,17 +1246,15 @@ export default function BTechApplyDynamicPage() {
                         value={customFields[field.id] || ""}
                         onChange={(e) => updateCustomField(field.id, e.target.value)}
                         placeholder={field.placeholder || "Enter details..."}
-                        className={`w-full px-4 py-2.5 rounded-xl border text-xs text-[#0B0C0E] bg-[#FAFAFA] focus:outline-none focus:bg-white resize-none ${
-                          errors[field.id] ? "border-rose-400 bg-rose-50/20" : "border-[#E9E7E1] focus:border-[#0B0C0E]"
-                        }`}
+                        className={`w-full px-4 py-2.5 rounded-xl border text-xs text-[#0B0C0E] bg-[#FAFAFA] focus:outline-none focus:bg-white resize-none ${errors[field.id] ? "border-rose-400 bg-rose-50/20" : "border-[#E9E7E1] focus:border-[#0B0C0E]"
+                          }`}
                       />
                     ) : field.type === "select" ? (
                       <select
                         value={customFields[field.id] || ""}
                         onChange={(e) => updateCustomField(field.id, e.target.value)}
-                        className={`w-full px-4 py-2.5 rounded-xl border text-xs text-[#0B0C0E] bg-[#FAFAFA] focus:outline-none focus:bg-white ${
-                          errors[field.id] ? "border-rose-400 bg-rose-50/20" : "border-[#E9E7E1] focus:border-[#0B0C0E]"
-                        }`}
+                        className={`w-full px-4 py-2.5 rounded-xl border text-xs text-[#0B0C0E] bg-[#FAFAFA] focus:outline-none focus:bg-white ${errors[field.id] ? "border-rose-400 bg-rose-50/20" : "border-[#E9E7E1] focus:border-[#0B0C0E]"
+                          }`}
                       >
                         <option value="">-- Select an option --</option>
                         {(field.options || []).map((opt) => (
@@ -962,9 +1269,8 @@ export default function BTechApplyDynamicPage() {
                         value={customFields[field.id] || ""}
                         onChange={(e) => updateCustomField(field.id, e.target.value)}
                         placeholder={field.placeholder || "Enter details..."}
-                        className={`w-full px-4 py-2.5 rounded-xl border text-xs text-[#0B0C0E] bg-[#FAFAFA] focus:outline-none focus:bg-white ${
-                          errors[field.id] ? "border-rose-400 bg-rose-50/20" : "border-[#E9E7E1] focus:border-[#0B0C0E]"
-                        }`}
+                        className={`w-full px-4 py-2.5 rounded-xl border text-xs text-[#0B0C0E] bg-[#FAFAFA] focus:outline-none focus:bg-white ${errors[field.id] ? "border-rose-400 bg-rose-50/20" : "border-[#E9E7E1] focus:border-[#0B0C0E]"
+                          }`}
                       />
                     )}
 
@@ -1002,13 +1308,12 @@ export default function BTechApplyDynamicPage() {
 
                     <div
                       onClick={() => fileInputRef.current?.click()}
-                      className={`p-8 rounded-2xl border-2 border-dashed text-center cursor-pointer transition-all ${
-                        formData.resume
-                          ? "border-emerald-500 bg-emerald-50/20"
-                          : errors.resume
+                      className={`p-8 rounded-2xl border-2 border-dashed text-center cursor-pointer transition-all ${formData.resume
+                        ? "border-emerald-500 bg-emerald-50/20"
+                        : errors.resume
                           ? "border-rose-400 bg-rose-50/20"
                           : "border-[#E9E7E1] hover:border-[#0B0C0E] bg-[#FAFAFA]"
-                      }`}
+                        }`}
                     >
                       {formData.resume ? (
                         <div className="flex flex-col items-center gap-2">

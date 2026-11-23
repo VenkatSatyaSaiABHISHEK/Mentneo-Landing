@@ -48,8 +48,8 @@ export interface CareerFormSettings {
 export const DEFAULT_BINS: FormBin[] = [
   {
     id: "bin-1",
-    name: "Initial Hiring Cohort (Nov 2026 Archive)",
-    description: "Historical registry containing all 560+ candidate submissions from the launch drive.",
+    name: "KIET Group of Institutions (Nov 2026 Archive)",
+    description: "Historical registry containing all 566 candidate submissions from KIET campus drive.",
     targetRole: "all",
     status: "archived",
     createdAt: "2026-11-10T00:00:00.000Z",
@@ -72,8 +72,8 @@ export const DEFAULT_BTECH_FIELDS: FormFieldConfig[] = [
   { id: "collegeRollNumber", label: "College Roll / Registration Number", type: "text", placeholder: "e.g. 21B01A0501", step: 1, enabled: true, required: true },
   
   // Step 2: Academics
+  { id: "collegeName", label: "College / University Name", type: "text", placeholder: "e.g. KIET Group of Institutions", step: 2, enabled: true, required: true },
   { id: "branch", label: "Engineering Branch / Specialization", type: "text", placeholder: "e.g. Computer Science (AI & ML)", step: 2, enabled: true, required: true },
-  { id: "collegeName", label: "College / University Name", type: "text", placeholder: "e.g. National Institute of Technology", step: 2, enabled: true, required: false },
   { id: "currentCgpa", label: "Current CGPA (or Percentage)", type: "text", placeholder: "e.g. 8.85 / 10", step: 2, enabled: true, required: true },
   { id: "graduationYear", label: "Graduation Year", type: "select", step: 2, enabled: true, required: true, options: ["2024", "2025", "2026", "2027", "2028"] },
   

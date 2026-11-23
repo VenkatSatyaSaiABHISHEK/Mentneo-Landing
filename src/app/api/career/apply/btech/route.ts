@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { dbExecute, generateApplicationReference } from "@/lib/career/db";
 import { saveResumeFile, validatePdfFile } from "@/lib/career/storage";
-import { persistNewApplication } from "@/lib/career/cloud-store";
+import { persistNewApplication, getAllStoredApplications } from "@/lib/career/cloud-store";
 import { getCareerFormSettings } from "@/lib/career/form-config";
 
 export const dynamic = "force-dynamic";
@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
     const fullName = (formData.get("fullName") as string)?.trim() || "";
     const email = (formData.get("email") as string)?.trim().toLowerCase() || "";
     const mobile = (formData.get("mobile") as string)?.trim() || "";
-    const collegeName = (formData.get("collegeName") as string)?.trim() || null;
+    const collegeName = (formData.get("collegeName") as string)?.trim() || "KIET Group of Institutions";
     const collegeRollNumber = (formData.get("collegeRollNumber") as string)?.trim() || "";
     const branch = (formData.get("branch") as string)?.trim() || "";
     const currentCgpa = (formData.get("currentCgpa") as string)?.trim() || "";
@@ -55,6 +55,7 @@ export async function POST(req: NextRequest) {
     checkRequired("fullName", fullName, "Full Legal Name");
     checkRequired("email", email, "Email Address");
     checkRequired("mobile", mobile, "Mobile Number");
+    checkRequired("collegeName", collegeName, "College / University Name");
     checkRequired("collegeRollNumber", collegeRollNumber, "College Roll Number");
     checkRequired("branch", branch, "Branch / Specialization");
     checkRequired("currentCgpa", currentCgpa, "Current CGPA / Percentage");
@@ -70,6 +71,35 @@ export async function POST(req: NextRequest) {
           { status: 400 }
         );
       }
+    }
+
+    // Duplicate submission prevention: check existing applications
+    try {
+      const existingApps = await getAllStoredApplications();
+      const cleanMobile = mobile.replace(/\D/g, "");
+      const cleanRoll = collegeRollNumber.toLowerCase().trim();
+      const cleanEmail = email.toLowerCase().trim();
+
+      const duplicate = existingApps.find((a) => {
+        const dupEmail = a.email && a.email.toLowerCase().trim() === cleanEmail;
+        const dupMobile = cleanMobile.length >= 10 && a.mobile && a.mobile.replace(/\D/g, "") === cleanMobile;
+        const dupRoll = cleanRoll && a.college_roll_number && a.college_roll_number.toLowerCase().trim() === cleanRoll;
+        return dupEmail || dupMobile || dupRoll;
+      });
+
+      if (duplicate) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: `An application has already been registered with this Email, Mobile number, or Roll number. Your reference code is ${duplicate.application_reference}. Duplicate submissions are not allowed.`,
+            duplicate: true,
+            reference: duplicate.application_reference,
+          },
+          { status: 409 }
+        );
+      }
+    } catch (dupErr) {
+      console.warn("[Apply BTech] Duplicate check notice:", (dupErr as Error).message);
     }
 
     let positions: string[] = [];
