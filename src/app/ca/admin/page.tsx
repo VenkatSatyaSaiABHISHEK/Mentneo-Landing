@@ -593,22 +593,27 @@ export default function AdminPage() {
 
   // Cohort Bin Filter Bar Helper
   const renderCohortBinFilterBar = () => (
-    <div className="p-3 rounded-2xl border border-[#E9E7E1] bg-white shadow-xs flex items-center justify-between gap-3 overflow-x-auto">
-      <div className="flex items-center gap-2">
-        <FolderArchive className="w-4 h-4 text-[#737883] shrink-0 ml-1" />
-        <span className="font-mono text-[11px] uppercase text-[#737883] tracking-wide shrink-0">
-          Cohort Bin:
-        </span>
+    <div className="p-2.5 sm:p-3 rounded-2xl border border-[#E9E7E1] bg-white shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-3">
+      {/* Scrollable Bins Area */}
+      <div className="flex-1 min-w-0 flex items-center gap-2 overflow-x-auto pb-1 md:pb-0 scrollbar-none">
+        <div className="flex items-center gap-1.5 shrink-0 text-[#737883] pl-1 pr-1">
+          <FolderArchive className="w-3.5 h-3.5" />
+          <span className="font-mono text-[11px] uppercase tracking-wide font-medium">
+            Cohort Bin:
+          </span>
+        </div>
+
         <button
           onClick={() => handleSelectBin("all")}
-          className={`px-3 py-1 rounded-xl font-mono text-xs transition-all shrink-0 ${
+          className={`px-3 py-1.5 rounded-xl font-mono text-xs transition-all shrink-0 whitespace-nowrap ${
             selectedBin === "all"
               ? "bg-[#0B0C0E] text-white font-semibold shadow-xs"
-              : "bg-[#FAFAFA] text-[#4A4E57] hover:bg-[#F0EFEB] hover:text-[#0B0C0E]"
+              : "bg-[#FAFAFA] text-[#4A4E57] hover:bg-[#F0EFEB] hover:text-[#0B0C0E] border border-[#EAEAEA]"
           }`}
         >
           All Bins ({allBinsTotal || metrics.total})
         </button>
+
         {binsList.map((bin) => {
           const isSelected = selectedBin === bin.id;
           const isActiveIntake = bin.id === formSettings?.activeBinId || bin.status === "active";
@@ -616,20 +621,20 @@ export default function AdminPage() {
             <button
               key={bin.id}
               onClick={() => handleSelectBin(bin.id)}
-              className={`px-3 py-1 rounded-xl font-mono text-xs transition-all flex items-center gap-1.5 shrink-0 ${
+              className={`px-3 py-1.5 rounded-xl font-mono text-xs transition-all flex items-center gap-1.5 shrink-0 whitespace-nowrap ${
                 isSelected
                   ? "bg-[#0B0C0E] text-white font-semibold shadow-xs"
-                  : "bg-[#FAFAFA] text-[#4A4E57] hover:bg-[#F0EFEB] hover:text-[#0B0C0E]"
+                  : "bg-[#FAFAFA] text-[#4A4E57] hover:bg-[#F0EFEB] hover:text-[#0B0C0E] border border-[#EAEAEA]"
               }`}
             >
               <span
-                className={`w-1.5 h-1.5 rounded-full ${
+                className={`w-1.5 h-1.5 rounded-full shrink-0 ${
                   isActiveIntake ? "bg-emerald-500 animate-pulse" : "bg-gray-400"
                 }`}
               />
-              <span>{bin.name}</span>
+              <span className="max-w-[240px] truncate">{bin.name}</span>
               <span
-                className={`px-1.5 py-0.2 rounded-md text-[10px] ${
+                className={`px-1.5 py-0.5 rounded-md text-[10px] font-bold ${
                   isSelected ? "bg-white/20 text-white" : "bg-[#E9E7E1] text-[#0B0C0E]"
                 }`}
               >
@@ -640,13 +645,16 @@ export default function AdminPage() {
         })}
       </div>
 
-      <button
-        onClick={() => setActiveTab("form_studio")}
-        className="px-3 py-1 rounded-xl border border-[#E9E7E1] hover:border-[#0B0C0E]/40 text-xs font-mono text-[#2F5BFF] hover:bg-[#FAFAFA] transition-colors shrink-0 flex items-center gap-1"
-      >
-        <Sliders className="w-3.5 h-3.5" />
-        <span>Manage Bins &amp; Forms</span>
-      </button>
+      {/* Action Button - separated cleanly by divider, never overlaps */}
+      <div className="shrink-0 flex items-center pt-2 md:pt-0 border-t md:border-t-0 md:border-l md:pl-3 border-[#EAEAEA]">
+        <button
+          onClick={() => setActiveTab("form_studio")}
+          className="w-full md:w-auto px-3.5 py-1.5 rounded-xl border border-[#E9E7E1] hover:border-[#0B0C0E]/40 text-xs font-mono text-[#2F5BFF] bg-white hover:bg-[#FAFAFA] transition-colors flex items-center justify-center gap-1.5 shadow-2xs whitespace-nowrap"
+        >
+          <Sliders className="w-3.5 h-3.5" />
+          <span>Manage Bins &amp; Forms</span>
+        </button>
+      </div>
     </div>
   );
 
