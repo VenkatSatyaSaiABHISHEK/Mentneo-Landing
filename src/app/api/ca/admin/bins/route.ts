@@ -45,6 +45,8 @@ export async function POST(req: NextRequest) {
       ...settings,
       bins: updatedBins,
       activeBinId: newBinId, // newly created bin becomes active intake bin
+      btech: { ...settings.btech, targetBinId: newBinId },
+      mba: { ...settings.mba, targetBinId: newBinId },
     };
 
     await saveCareerFormSettings(updatedSettings);
@@ -55,6 +57,8 @@ export async function POST(req: NextRequest) {
       bin: newBin,
       bins: updatedBins,
       activeBinId: newBinId,
+      data: updatedSettings,
+      settings: updatedSettings,
     });
   } catch (err: unknown) {
     console.error("Error creating bin:", (err as Error).message);

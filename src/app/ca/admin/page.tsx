@@ -168,10 +168,11 @@ export default function AdminPage() {
       });
       if (res.ok) {
         const json = await res.json();
-        if (json.success && json.data) {
-          setFormSettings(json.data);
-          if (Array.isArray(json.data.bins)) {
-            setBinsList(json.data.bins);
+        const conf = json.data || json.settings;
+        if (json.success && conf) {
+          setFormSettings(conf);
+          if (Array.isArray(conf.bins)) {
+            setBinsList(conf.bins);
           }
         }
       }
@@ -276,8 +277,11 @@ export default function AdminPage() {
       });
       const json = await res.json();
       if (res.ok && json.success) {
-        setFormSettings(json.data);
-        if (Array.isArray(json.data.bins)) setBinsList(json.data.bins);
+        const conf = json.data || json.settings;
+        if (conf) {
+          setFormSettings(conf);
+          if (Array.isArray(conf.bins)) setBinsList(conf.bins);
+        }
         setSettingsFeedback("Settings and dynamic form configuration saved successfully.");
         setTimeout(() => setSettingsFeedback(""), 4000);
       } else {
@@ -325,6 +329,11 @@ export default function AdminPage() {
         setNewBinName("");
         setNewBinDesc("");
         setNewBinModalOpen(false);
+        const conf = json.data || json.settings;
+        if (conf) {
+          setFormSettings(conf);
+          if (Array.isArray(conf.bins)) setBinsList(conf.bins);
+        }
         await loadFormConfig();
       }
     } catch (err) {
@@ -437,7 +446,7 @@ export default function AdminPage() {
 
   const handleManualRefresh = async () => {
     setIsRefreshing(true);
-    await Promise.all([checkSession(), loadApplications()]);
+    await Promise.all([checkSession(), loadApplications(), loadFormConfig()]);
     setTimeout(() => setIsRefreshing(false), 500);
   };
 

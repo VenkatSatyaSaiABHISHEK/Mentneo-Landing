@@ -35,6 +35,10 @@ export async function GET(req: NextRequest) {
     return NextResponse.json(
       {
         success: true,
+        data: {
+          ...settings,
+          bins: binsWithCounts,
+        },
         settings: {
           ...settings,
           bins: binsWithCounts,
@@ -75,6 +79,7 @@ export async function PUT(req: NextRequest) {
     return NextResponse.json({
       success: true,
       message: "Form configuration and cohort bins updated successfully",
+      data: body,
       settings: body,
     });
   } catch (err: unknown) {
