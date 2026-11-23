@@ -12,7 +12,9 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const data = await getDashboardOverviewMetrics();
+    const { searchParams } = new URL(req.url);
+    const bin = searchParams.get("bin") || undefined;
+    const data = await getDashboardOverviewMetrics(bin);
     return NextResponse.json(
       {
         success: true,

@@ -72,13 +72,15 @@ export function verifySessionToken(token: string | undefined): boolean {
   if (parts.length !== 2) return false;
 
   const [payloadB64, signature] = parts;
-  const expectedSig = crypto.createHmac("sha256", secret).update(payloadB64).digest("base64url");
-
-  if (!crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expectedSig))) {
-    return false;
-  }
-
   try {
+    const expectedSig = crypto.createHmac("sha256", secret).update(payloadB64).digest("base64url");
+    const sigBuf = Buffer.from(signature);
+    const expBuf = Buffer.from(expectedSig);
+
+    if (sigBuf.length !== expBuf.length || !crypto.timingSafeEqual(sigBuf, expBuf)) {
+      return false;
+    }
+
     const payload = JSON.parse(Buffer.from(payloadB64, "base64url").toString("utf-8"));
     if (payload.role !== "admin") return false;
     if (Date.now() > payload.exp) return false;

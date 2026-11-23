@@ -16,10 +16,17 @@ function getR2Config() {
 
 export interface StoredApplication extends ApplicationRecord {
   positions: string[];
+  cohort_id?: string;
+  cohort_name?: string;
+  custom_fields?: Record<string, unknown>;
   events?: Array<{ id: number; event_type: string; event_description: string; created_at: string }>;
   notes?: Array<{ id: number; admin_id: string; note: string; created_at: string }>;
 }
 
+/**
+ * Saves candidate application to Cloudflare R2 persistent storage.
+ * Works across all serverless regions and instances with zero cold start.
+ */
 /**
  * Saves candidate application to Cloudflare R2 persistent storage.
  * Works across all serverless regions and instances with zero cold start.
@@ -47,6 +54,37 @@ export async function saveApplicationToR2(app: StoredApplication): Promise<boole
 
     if (res.ok) {
       console.log(`[CloudStore] Persisted ${app.application_reference} to Cloudflare R2`);
+      
+      // Also update master index in R2
+      try {
+        const indexKey = "settings/applications_index.json";
+        const indexEndpoint = `https://api.cloudflare.com/client/v4/accounts/${accountId}/r2/buckets/${bucket}/objects/${encodeURIComponent(indexKey)}`;
+        const indexRes = await fetch(indexEndpoint, {
+          method: "GET",
+          headers: { Authorization: `Bearer ${apiToken}` },
+          cache: "no-store",
+        });
+        let indexList: StoredApplication[] = [];
+        if (indexRes.ok) {
+          indexList = (await indexRes.json()) as StoredApplication[];
+          if (!Array.isArray(indexList)) indexList = [];
+        }
+        // Prepend new app, deduplicate
+        indexList = [app, ...indexList.filter((a) => a.application_reference !== app.application_reference)];
+        const indexPayload = JSON.stringify(indexList);
+        await fetch(indexEndpoint, {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${apiToken}`,
+            "Content-Type": "application/json",
+            "Content-Length": Buffer.byteLength(indexPayload).toString(),
+          },
+          body: indexPayload,
+        });
+      } catch (idxErr) {
+        console.warn("[CloudStore] Non-blocking R2 index update error:", (idxErr as Error).message);
+      }
+
       return true;
     }
   } catch (err) {
@@ -56,7 +94,7 @@ export async function saveApplicationToR2(app: StoredApplication): Promise<boole
 }
 
 /**
- * Loads all applications from Cloudflare R2.
+ * Loads all applications from Cloudflare R2 using the master index or fallback.
  */
 export async function getApplicationsFromR2(): Promise<StoredApplication[]> {
   const { accountId, apiToken, bucket } = getR2Config();
@@ -64,8 +102,31 @@ export async function getApplicationsFromR2(): Promise<StoredApplication[]> {
     return [];
   }
 
+  // 1. Try pre-compiled master index in R2
   try {
-    const listEndpoint = `https://api.cloudflare.com/client/v4/accounts/${accountId}/r2/buckets/${bucket}/objects?prefix=applications/`;
+    const indexKey = "settings/applications_index.json";
+    const indexEndpoint = `https://api.cloudflare.com/client/v4/accounts/${accountId}/r2/buckets/${bucket}/objects/${encodeURIComponent(indexKey)}`;
+    const indexRes = await fetch(indexEndpoint, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${apiToken}`,
+      },
+      cache: "no-store",
+    });
+
+    if (indexRes.ok) {
+      const data = await indexRes.json();
+      if (Array.isArray(data) && data.length > 0) {
+        return data as StoredApplication[];
+      }
+    }
+  } catch (err) {
+    console.warn("[CloudStore] R2 index query notice:", (err as Error).message);
+  }
+
+  // 2. Fallback: list prefix
+  try {
+    const listEndpoint = `https://api.cloudflare.com/client/v4/accounts/${accountId}/r2/buckets/${bucket}/objects?prefix=applications/&per_page=100`;
     const listRes = await fetch(listEndpoint, {
       method: "GET",
       headers: {
@@ -79,9 +140,8 @@ export async function getApplicationsFromR2(): Promise<StoredApplication[]> {
     const items = listData?.result || [];
     const applications: StoredApplication[] = [];
 
-    // Fetch individual application JSONs in parallel
     await Promise.all(
-      items.map(async (item: { key: string }) => {
+      items.slice(0, 30).map(async (item: { key: string }) => {
         if (!item.key.endsWith(".json")) return;
         try {
           const itemEndpoint = `https://api.cloudflare.com/client/v4/accounts/${accountId}/r2/buckets/${bucket}/objects/${encodeURIComponent(item.key)}`;
@@ -101,7 +161,6 @@ export async function getApplicationsFromR2(): Promise<StoredApplication[]> {
       })
     );
 
-    // Sort descending by submitted_at
     applications.sort((a, b) => new Date(b.submitted_at || 0).getTime() - new Date(a.submitted_at || 0).getTime());
     return applications;
   } catch (err) {
@@ -254,6 +313,12 @@ export async function getAllStoredApplications(): Promise<StoredApplication[]> {
   } catch {}
 
   const list = Array.from(map.values());
+  for (const a of list) {
+    if (!a.cohort_id) {
+      a.cohort_id = "bin-1";
+      a.cohort_name = "Initial Hiring Cohort (Nov 2026 Archive)";
+    }
+  }
   list.sort((a, b) => new Date(b.submitted_at || 0).getTime() - new Date(a.submitted_at || 0).getTime());
   return list;
 }
@@ -263,16 +328,22 @@ export async function getAllStoredApplications(): Promise<StoredApplication[]> {
  */
 export async function persistNewApplication(
   app: ApplicationRecord,
-  positionNames: string[]
+  positionNames: string[],
+  cohortId: string = "bin-2",
+  cohortName: string = "Active Cohort · 2026-2027 Recruitment",
+  customFields?: Record<string, unknown>
 ): Promise<void> {
   const fullRecord: StoredApplication = {
     ...app,
     positions: positionNames,
+    cohort_id: cohortId,
+    cohort_name: cohortName,
+    custom_fields: customFields || {},
     events: [
       {
         id: 1,
         event_type: "STATUS_CHANGE",
-        event_description: "Application successfully submitted via Mentneo Careers Portal",
+        event_description: `Application successfully submitted for cohort '${cohortName}' via Mentneo Careers Portal`,
         created_at: app.submitted_at || new Date().toISOString(),
       },
     ],
@@ -307,6 +378,9 @@ export async function persistNewApplication(
       application_status: app.application_status || "Submitted",
       submitted_at: app.submitted_at,
       updated_at: app.updated_at,
+      cohort_id: cohortId,
+      cohort_name: cohortName,
+      custom_fields: customFields ? JSON.stringify(customFields) : null,
     };
 
     const res = await fetch(`${SUPABASE_URL}/rest/v1/applications`, {
@@ -469,9 +543,22 @@ export async function updateCloudApplicationStatus(
 
 /**
  * Computes dashboard metrics directly from the unified cloud store.
+ * Supports filtering by cohort bin.
  */
-export async function getDashboardOverviewMetrics() {
-  const apps = await getAllStoredApplications();
+export async function getDashboardOverviewMetrics(filterBinId?: string) {
+  const allApps = await getAllStoredApplications();
+
+  // Compute bin counts across all applications
+  const binCountMap: Record<string, number> = {};
+  for (const app of allApps) {
+    const bId = app.cohort_id || "bin-1";
+    binCountMap[bId] = (binCountMap[bId] || 0) + 1;
+  }
+
+  // Filter if binId specified and not "all"
+  const apps = (filterBinId && filterBinId !== "all")
+    ? allApps.filter((a) => (a.cohort_id || "bin-1") === filterBinId)
+    : allApps;
 
   let btechTotal = 0;
   let mbaTotal = 0;
@@ -524,6 +611,7 @@ export async function getDashboardOverviewMetrics() {
   const metricsObj = {
     total: apps.length,
     totalApplicants: apps.length,
+    allBinsTotal: allApps.length,
     btech: btechTotal,
     btechTotal,
     mba: mbaTotal,
@@ -538,6 +626,8 @@ export async function getDashboardOverviewMetrics() {
     submitted: statusMap["Submitted"] || 0,
   };
 
+  const binCounts = Object.entries(binCountMap).map(([id, count]) => ({ id, count }));
+
   return {
     metrics: metricsObj,
     overview: metricsObj,
@@ -545,6 +635,7 @@ export async function getDashboardOverviewMetrics() {
     positionStats,
     gradYearStats,
     recentApplications,
+    binCounts,
   };
 }
 

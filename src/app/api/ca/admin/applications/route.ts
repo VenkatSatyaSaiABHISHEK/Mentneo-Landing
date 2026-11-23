@@ -18,12 +18,17 @@ export async function GET(req: NextRequest) {
     const status = searchParams.get("status");
     const position = searchParams.get("position");
     const gradYear = searchParams.get("gradYear");
+    const bin = searchParams.get("bin");
     const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10));
     const limit = Math.max(1, Math.min(100, parseInt(searchParams.get("limit") || "15", 10)));
 
     let all = await getAllStoredApplications();
 
     // Filters
+    if (bin && bin !== "all") {
+      all = all.filter((a) => (a.cohort_id || "bin-1") === bin);
+    }
+
     if (type && ["btech", "mba", "internship"].includes(type)) {
       all = all.filter((a) => a.applicant_type === type);
     }

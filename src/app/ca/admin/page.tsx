@@ -20,7 +20,16 @@ import {
   History,
   X,
   ArrowRight,
+  Plus,
+  Trash2,
+  FolderArchive,
+  Sliders,
+  Check,
+  Lock,
+  Unlock,
+  CheckCircle2,
 } from "lucide-react";
+import type { CareerFormSettings, FormBin, FormFieldConfig } from "@/lib/career/form-config";
 
 interface OverviewMetrics {
   total: number;
@@ -76,7 +85,33 @@ export default function AdminPage() {
   const [loginError, setLoginError] = useState("");
 
   // Dashboard states
-  const [activeTab, setActiveTab] = useState<"overview" | "applicants" | "analytics" | "export">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "applicants" | "analytics" | "export" | "form_studio">("overview");
+
+  // Bins & Form Studio states
+  const [selectedBin, setSelectedBin] = useState<string>("all");
+  const [binsList, setBinsList] = useState<FormBin[]>([]);
+  const [allBinsTotal, setAllBinsTotal] = useState<number>(0);
+  const [formSettings, setFormSettings] = useState<CareerFormSettings | null>(null);
+  const [formSettingsSaving, setFormSettingsSaving] = useState(false);
+  const [settingsFeedback, setSettingsFeedback] = useState<string>("");
+  const [studioRole, setStudioRole] = useState<"btech" | "mba">("btech");
+
+  // New Bin Modal
+  const [newBinModalOpen, setNewBinModalOpen] = useState(false);
+  const [newBinName, setNewBinName] = useState("");
+  const [newBinDesc, setNewBinDesc] = useState("");
+  const [newBinRole, setNewBinRole] = useState<"all" | "btech" | "mba">("all");
+  const [newBinCreating, setNewBinCreating] = useState(false);
+
+  // Custom Field Modal
+  const [customFieldModalOpen, setCustomFieldModalOpen] = useState(false);
+  const [newFieldLabel, setNewFieldLabel] = useState("");
+  const [newFieldKey, setNewFieldKey] = useState("");
+  const [newFieldType, setNewFieldType] = useState<"text" | "number" | "select" | "textarea" | "url">("text");
+  const [newFieldStep, setNewFieldStep] = useState<number>(6);
+  const [newFieldRequired, setNewFieldRequired] = useState(false);
+  const [newFieldOptions, setNewFieldOptions] = useState("");
+  const [newFieldPlaceholder, setNewFieldPlaceholder] = useState("");
   const [metrics, setMetrics] = useState<OverviewMetrics>({
     total: 0,
     btech: 0,
@@ -125,9 +160,30 @@ export default function AdminPage() {
 
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const checkSession = useCallback(async () => {
+  const loadFormConfig = useCallback(async () => {
     try {
-      const res = await fetch(`/api/ca/admin/dashboard?t=${Date.now()}`, {
+      const res = await fetch(`/api/ca/admin/form-config?t=${Date.now()}`, {
+        cache: "no-store",
+      });
+      if (res.ok) {
+        const json = await res.json();
+        if (json.success && json.data) {
+          setFormSettings(json.data);
+          if (Array.isArray(json.data.bins)) {
+            setBinsList(json.data.bins);
+          }
+        }
+      }
+    } catch (err) {
+      console.warn("Failed to load form config:", err);
+    }
+  }, []);
+
+  const checkSession = useCallback(async (binOverride?: string) => {
+    try {
+      const activeBinParam = binOverride !== undefined ? binOverride : selectedBin;
+      const binQuery = activeBinParam !== "all" ? `&bin=${encodeURIComponent(activeBinParam)}` : "";
+      const res = await fetch(`/api/ca/admin/dashboard?t=${Date.now()}${binQuery}`, {
         cache: "no-store",
         headers: { "Cache-Control": "no-cache" },
       });
@@ -148,6 +204,9 @@ export default function AdminPage() {
             selected: rawM.selected ?? 0,
             rejected: rawM.rejected ?? 0,
           });
+          if (rawM.allBinsTotal !== undefined) {
+            setAllBinsTotal(rawM.allBinsTotal);
+          }
           setPositionStats(Array.isArray(json.data.positionStats) ? json.data.positionStats : []);
           setGradYearStats(Array.isArray(json.data.gradYearStats) ? json.data.gradYearStats : []);
           setRecentApplications(Array.isArray(json.data.recentApplications) ? json.data.recentApplications : []);
@@ -158,12 +217,13 @@ export default function AdminPage() {
     } catch {
       setIsAuthenticated(false);
     }
-  }, []);
+  }, [selectedBin]);
 
-  const loadApplications = useCallback(async (overrideSearch?: string) => {
+  const loadApplications = useCallback(async (overrideSearch?: string, binOverride?: string) => {
     setListLoading(true);
     try {
       const query = overrideSearch !== undefined ? overrideSearch : searchQuery;
+      const activeBinParam = binOverride !== undefined ? binOverride : selectedBin;
       const params = new URLSearchParams({
         page: currentPage.toString(),
         limit: "12",
@@ -171,6 +231,7 @@ export default function AdminPage() {
         status: statusFilter,
         gradYear: gradYearFilter,
         search: query,
+        bin: activeBinParam,
         t: Date.now().toString(),
       });
 
@@ -192,7 +253,186 @@ export default function AdminPage() {
     } finally {
       setListLoading(false);
     }
-  }, [currentPage, typeFilter, statusFilter, gradYearFilter, searchQuery]);
+  }, [currentPage, typeFilter, statusFilter, gradYearFilter, searchQuery, selectedBin]);
+
+  const handleSelectBin = (binId: string) => {
+    setSelectedBin(binId);
+    setCurrentPage(1);
+    checkSession(binId);
+    loadApplications(undefined, binId);
+  };
+
+  const handleSaveSettings = async (customConfig?: CareerFormSettings) => {
+    const toSave = customConfig || formSettings;
+    if (!toSave) return;
+    setFormSettingsSaving(true);
+    setSettingsFeedback("");
+    try {
+      const res = await fetch("/api/ca/admin/form-config", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(toSave),
+      });
+      const json = await res.json();
+      if (res.ok && json.success) {
+        setFormSettings(json.data);
+        if (Array.isArray(json.data.bins)) setBinsList(json.data.bins);
+        setSettingsFeedback("Settings and dynamic form configuration saved successfully.");
+        setTimeout(() => setSettingsFeedback(""), 4000);
+      } else {
+        throw new Error(json.error || "Failed to update settings");
+      }
+    } catch (err: unknown) {
+      setSettingsFeedback(`Error: ${(err as Error).message}`);
+    } finally {
+      setFormSettingsSaving(false);
+    }
+  };
+
+  const handleSetActiveBin = async (binId: string) => {
+    if (!formSettings) return;
+    const updated: CareerFormSettings = {
+      ...formSettings,
+      activeBinId: binId,
+      bins: formSettings.bins.map((b) => ({
+        ...b,
+        status: b.id === binId ? "active" : b.status === "active" ? "archived" : b.status,
+      })),
+      btech: { ...formSettings.btech, targetBinId: binId },
+      mba: { ...formSettings.mba, targetBinId: binId },
+    };
+    setFormSettings(updated);
+    await handleSaveSettings(updated);
+  };
+
+  const handleCreateBin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newBinName.trim()) return;
+    setNewBinCreating(true);
+    try {
+      const res = await fetch("/api/ca/admin/bins", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: newBinName.trim(),
+          description: newBinDesc.trim() || `Intake cohort created on ${new Date().toLocaleDateString()}`,
+          targetRole: newBinRole,
+        }),
+      });
+      const json = await res.json();
+      if (res.ok && json.success) {
+        setNewBinName("");
+        setNewBinDesc("");
+        setNewBinModalOpen(false);
+        await loadFormConfig();
+      }
+    } catch (err) {
+      console.error("Create bin error:", err);
+    } finally {
+      setNewBinCreating(false);
+    }
+  };
+
+  const toggleGlobalOpen = async () => {
+    if (!formSettings) return;
+    const updated: CareerFormSettings = {
+      ...formSettings,
+      globalOpen: !formSettings.globalOpen,
+    };
+    setFormSettings(updated);
+    await handleSaveSettings(updated);
+  };
+
+  const toggleRoleOpen = async (role: "btech" | "mba") => {
+    if (!formSettings) return;
+    const updated: CareerFormSettings = {
+      ...formSettings,
+      [role]: {
+        ...formSettings[role],
+        isOpen: !formSettings[role].isOpen,
+      },
+    };
+    setFormSettings(updated);
+    await handleSaveSettings(updated);
+  };
+
+  const toggleFieldEnabled = (role: "btech" | "mba", fieldId: string) => {
+    if (!formSettings) return;
+    const targetFields = formSettings[role].fields.map((f) => {
+      if (f.id === fieldId) {
+        return { ...f, enabled: !f.enabled };
+      }
+      return f;
+    });
+    setFormSettings({
+      ...formSettings,
+      [role]: { ...formSettings[role], fields: targetFields },
+    });
+  };
+
+  const toggleFieldRequired = (role: "btech" | "mba", fieldId: string) => {
+    if (!formSettings) return;
+    const targetFields = formSettings[role].fields.map((f) => {
+      if (f.id === fieldId) {
+        return { ...f, required: !f.required };
+      }
+      return f;
+    });
+    setFormSettings({
+      ...formSettings,
+      [role]: { ...formSettings[role], fields: targetFields },
+    });
+  };
+
+  const handleAddCustomField = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formSettings || !newFieldLabel.trim()) return;
+    const autoKey =
+      newFieldKey.trim() ||
+      newFieldLabel.toLowerCase().replace(/[^a-z0-9]/g, "_").replace(/^_+|_+$/g, "") ||
+      `custom_${Date.now()}`;
+    const newField: FormFieldConfig = {
+      id: autoKey,
+      label: newFieldLabel.trim(),
+      type: newFieldType,
+      step: Number(newFieldStep) || 6,
+      enabled: true,
+      required: newFieldRequired,
+      isCustom: true,
+      placeholder: newFieldPlaceholder.trim() || undefined,
+      options:
+        newFieldType === "select" && newFieldOptions.trim()
+          ? newFieldOptions.split(",").map((s) => s.trim()).filter(Boolean)
+          : undefined,
+    };
+
+    const targetFields = [...formSettings[studioRole].fields, newField];
+    setFormSettings({
+      ...formSettings,
+      [studioRole]: { ...formSettings[studioRole], fields: targetFields },
+    });
+    setCustomFieldModalOpen(false);
+    setNewFieldLabel("");
+    setNewFieldKey("");
+    setNewFieldPlaceholder("");
+    setNewFieldOptions("");
+    setNewFieldRequired(false);
+  };
+
+  const handleDeleteCustomField = (role: "btech" | "mba", fieldId: string) => {
+    if (!formSettings) return;
+    const targetFields = formSettings[role].fields.filter((f) => f.id !== fieldId);
+    setFormSettings({
+      ...formSettings,
+      [role]: { ...formSettings[role], fields: targetFields },
+    });
+  };
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      loadFormConfig();
+    }
+  }, [isAuthenticated, loadFormConfig]);
 
   const handleManualRefresh = async () => {
     setIsRefreshing(true);
@@ -340,6 +580,65 @@ export default function AdminPage() {
       setNoteSubmitting(false);
     }
   };
+
+  // Cohort Bin Filter Bar Helper
+  const renderCohortBinFilterBar = () => (
+    <div className="p-3 rounded-2xl border border-[#E9E7E1] bg-white shadow-xs flex items-center justify-between gap-3 overflow-x-auto">
+      <div className="flex items-center gap-2">
+        <FolderArchive className="w-4 h-4 text-[#737883] shrink-0 ml-1" />
+        <span className="font-mono text-[11px] uppercase text-[#737883] tracking-wide shrink-0">
+          Cohort Bin:
+        </span>
+        <button
+          onClick={() => handleSelectBin("all")}
+          className={`px-3 py-1 rounded-xl font-mono text-xs transition-all shrink-0 ${
+            selectedBin === "all"
+              ? "bg-[#0B0C0E] text-white font-semibold shadow-xs"
+              : "bg-[#FAFAFA] text-[#4A4E57] hover:bg-[#F0EFEB] hover:text-[#0B0C0E]"
+          }`}
+        >
+          All Bins ({allBinsTotal || metrics.total})
+        </button>
+        {binsList.map((bin) => {
+          const isSelected = selectedBin === bin.id;
+          const isActiveIntake = bin.id === formSettings?.activeBinId || bin.status === "active";
+          return (
+            <button
+              key={bin.id}
+              onClick={() => handleSelectBin(bin.id)}
+              className={`px-3 py-1 rounded-xl font-mono text-xs transition-all flex items-center gap-1.5 shrink-0 ${
+                isSelected
+                  ? "bg-[#0B0C0E] text-white font-semibold shadow-xs"
+                  : "bg-[#FAFAFA] text-[#4A4E57] hover:bg-[#F0EFEB] hover:text-[#0B0C0E]"
+              }`}
+            >
+              <span
+                className={`w-1.5 h-1.5 rounded-full ${
+                  isActiveIntake ? "bg-emerald-500 animate-pulse" : "bg-gray-400"
+                }`}
+              />
+              <span>{bin.name}</span>
+              <span
+                className={`px-1.5 py-0.2 rounded-md text-[10px] ${
+                  isSelected ? "bg-white/20 text-white" : "bg-[#E9E7E1] text-[#0B0C0E]"
+                }`}
+              >
+                {bin.applicationCount ?? 0}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
+      <button
+        onClick={() => setActiveTab("form_studio")}
+        className="px-3 py-1 rounded-xl border border-[#E9E7E1] hover:border-[#0B0C0E]/40 text-xs font-mono text-[#2F5BFF] hover:bg-[#FAFAFA] transition-colors shrink-0 flex items-center gap-1"
+      >
+        <Sliders className="w-3.5 h-3.5" />
+        <span>Manage Bins &amp; Forms</span>
+      </button>
+    </div>
+  );
 
   // Status Badge Helper
   const renderStatusBadge = (st: string) => {
@@ -521,6 +820,7 @@ export default function AdminPage() {
             { id: "applicants", label: `Applicants (${totalApps || metrics?.total || 0})` },
             { id: "analytics", label: "Analytics & Trends" },
             { id: "export", label: "Export Records" },
+            { id: "form_studio", label: "Form & Bins Studio" },
           ].map((tab) => {
             const isActive = activeTab === tab.id;
             return (
@@ -546,7 +846,8 @@ export default function AdminPage() {
             TAB 1: OVERVIEW
         ========================================================================= */}
         {activeTab === "overview" && (
-          <div className="space-y-8">
+          <div className="space-y-6">
+            {renderCohortBinFilterBar()}
             {/* Top Stat Tiles */}
             <div className="grid grid-cols-2 md:grid-cols-5 gap-3.5">
               <div className="p-5 rounded-2xl border border-[#E9E7E1] bg-white shadow-sm">
@@ -691,6 +992,7 @@ export default function AdminPage() {
         ========================================================================= */}
         {activeTab === "applicants" && (
           <div className="space-y-5">
+            {renderCohortBinFilterBar()}
             {/* Search & Filters Bar */}
             <div className="p-4 rounded-2xl border border-[#E9E7E1] bg-white shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
               {/* Search Box */}
@@ -1065,6 +1367,420 @@ export default function AdminPage() {
             </div>
           </div>
         )}
+
+        {/* =========================================================================
+            TAB 5: RECRUITMENT FORM & BINS STUDIO
+        ========================================================================= */}
+        {activeTab === "form_studio" && (
+          <div className="space-y-8">
+            {/* Header & Global Status Notification */}
+            <div className="p-6 rounded-3xl border border-[#E9E7E1] bg-white shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+              <div>
+                <div className="flex items-center gap-2.5">
+                  <Sliders className="w-5 h-5 text-[#2F5BFF]" />
+                  <h2 className="text-lg font-bold tracking-tight text-[#0B0C0E]">
+                    Recruitment Form &amp; Bins Studio
+                  </h2>
+                </div>
+                <p className="text-xs text-[#737883] mt-1 max-w-2xl leading-relaxed">
+                  Manage candidate intake cycles (Bins), dynamically toggle role application forms on or off, and customize mandatory requirements so candidates cannot proceed without filling vital information.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-3 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => handleSaveSettings()}
+                  disabled={formSettingsSaving}
+                  className="px-5 py-2.5 rounded-xl bg-[#0B0C0E] hover:bg-black text-white text-xs font-semibold shadow-sm transition-all flex items-center gap-2 disabled:opacity-50"
+                >
+                  {formSettingsSaving ? (
+                    <RefreshCw className="w-4 h-4 animate-spin text-[#2F5BFF]" />
+                  ) : (
+                    <Check className="w-4 h-4 text-emerald-400" />
+                  )}
+                  <span>{formSettingsSaving ? "Saving Config..." : "Save Settings"}</span>
+                </button>
+              </div>
+            </div>
+
+            {settingsFeedback && (
+              <div className="p-4 rounded-2xl border border-emerald-200 bg-emerald-50 text-xs text-emerald-800 flex items-center justify-between animate-in fade-in">
+                <div className="flex items-center gap-2 font-medium">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <span>{settingsFeedback}</span>
+                </div>
+                <button onClick={() => setSettingsFeedback("")} className="text-emerald-600 hover:text-emerald-900">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            )}
+
+            {/* SECTION 1: MASTER RECRUITMENT TOGGLES & BINS */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Master Global Toggle Card */}
+              <div className="p-6 rounded-3xl border border-[#E9E7E1] bg-white shadow-sm space-y-4">
+                <div className="flex items-center justify-between pb-3 border-b border-[#E9E7E1]">
+                  <div>
+                    <h3 className="text-sm font-semibold text-[#0B0C0E]">Global Applications Gate</h3>
+                    <p className="text-[11px] text-[#737883]">Master on/off switch for entire career portal</p>
+                  </div>
+                  <span className={`w-2.5 h-2.5 rounded-full ${formSettings?.globalOpen ? "bg-emerald-500 animate-pulse" : "bg-rose-500"}`} />
+                </div>
+
+                <div className="flex items-center justify-between p-3.5 rounded-2xl border border-[#E9E7E1] bg-[#FAFAFA]">
+                  <div>
+                    <span className="text-xs font-bold text-[#0B0C0E] block">
+                      {formSettings?.globalOpen ? "Applications ACTIVE (Open)" : "Applications PAUSED (Closed)"}
+                    </span>
+                    <span className="text-[10px] text-[#737883]">
+                      {formSettings?.globalOpen ? "Accepting candidate submissions" : "Portal shows closed notice"}
+                    </span>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={toggleGlobalOpen}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-mono font-semibold transition-all flex items-center gap-1.5 ${
+                      formSettings?.globalOpen
+                        ? "bg-emerald-100 text-emerald-800 hover:bg-emerald-200"
+                        : "bg-rose-100 text-rose-800 hover:bg-rose-200"
+                    }`}
+                  >
+                    {formSettings?.globalOpen ? <Unlock className="w-3.5 h-3.5" /> : <Lock className="w-3.5 h-3.5" />}
+                    <span>{formSettings?.globalOpen ? "Turn OFF" : "Turn ON"}</span>
+                  </button>
+                </div>
+
+                <div className="p-3.5 rounded-2xl border border-[#E9E7E1] bg-white text-xs space-y-2">
+                  <span className="font-mono text-[10px] uppercase text-[#737883] tracking-wider block font-semibold">
+                    Active Intake Destination Bin
+                  </span>
+                  <div className="flex items-center justify-between">
+                    <span className="font-medium text-[#0B0C0E]">
+                      {binsList.find((b) => b.id === formSettings?.activeBinId)?.name || "Active Intake Bin"}
+                    </span>
+                    <span className="font-mono text-[10px] text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-md">
+                      {formSettings?.activeBinId}
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-[#737883]">
+                    New candidate submissions are automatically stamped with this bin ID.
+                  </p>
+                </div>
+              </div>
+
+              {/* Cohort Bins Management (2 cols) */}
+              <div className="lg:col-span-2 p-6 rounded-3xl border border-[#E9E7E1] bg-white shadow-sm space-y-4">
+                <div className="flex items-center justify-between pb-3 border-b border-[#E9E7E1]">
+                  <div>
+                    <h3 className="text-sm font-semibold text-[#0B0C0E]">Cohort Bins Registry</h3>
+                    <p className="text-[11px] text-[#737883]">
+                      Existing candidate data is preserved in historical archive bins.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setNewBinModalOpen(true)}
+                    className="px-3 py-1.5 rounded-xl bg-[#2F5BFF] hover:bg-[#2563EB] text-white text-xs font-medium shadow-xs transition-colors flex items-center gap-1.5"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Create New Bin</span>
+                  </button>
+                </div>
+
+                <div className="space-y-3">
+                  {binsList.map((bin) => {
+                    const isActive = bin.id === formSettings?.activeBinId;
+                    return (
+                      <div
+                        key={bin.id}
+                        className={`p-4 rounded-2xl border transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
+                          isActive
+                            ? "border-emerald-300 bg-emerald-50/30"
+                            : "border-[#E9E7E1] bg-[#FAFAFA] hover:bg-white"
+                        }`}
+                      >
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2">
+                            <span className="font-bold text-xs text-[#0B0C0E]">{bin.name}</span>
+                            <span className="font-mono text-[10px] px-2 py-0.5 rounded-md bg-white border border-[#E9E7E1] text-[#737883]">
+                              {bin.id}
+                            </span>
+                            {isActive && (
+                              <span className="font-mono text-[10px] px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 font-semibold border border-emerald-200">
+                                ACTIVE INTAKE
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-xs text-[#737883] leading-relaxed">{bin.description}</p>
+                        </div>
+
+                        <div className="flex items-center gap-3 shrink-0">
+                          <div className="text-right">
+                            <span className="font-mono text-sm font-bold text-[#0B0C0E] block">
+                              {bin.applicationCount ?? 0}
+                            </span>
+                            <span className="text-[10px] text-[#737883]">Candidates</span>
+                          </div>
+
+                          {!isActive && (
+                            <button
+                              type="button"
+                              onClick={() => handleSetActiveBin(bin.id)}
+                              className="px-3 py-1.5 rounded-xl border border-[#E9E7E1] bg-white text-xs font-medium hover:border-[#0B0C0E] transition-colors"
+                            >
+                              Set as Active
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+
+            {/* SECTION 2: ROLE APPLICATION FORMS & DYNAMIC FIELD STUDIO */}
+            <div className="p-6 rounded-3xl border border-[#E9E7E1] bg-white shadow-sm space-y-6">
+              {/* Role Sub-Tabs & Role Open/Close Switch */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#E9E7E1]">
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setStudioRole("btech")}
+                    className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all ${
+                      studioRole === "btech"
+                        ? "bg-[#2F5BFF] text-white shadow-sm"
+                        : "bg-[#FAFAFA] text-[#4A4E57] hover:bg-[#F0EFEB]"
+                    }`}
+                  >
+                    B.Tech Machine Learning Track
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setStudioRole("mba")}
+                    className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all ${
+                      studioRole === "mba"
+                        ? "bg-[#2F5BFF] text-white shadow-sm"
+                        : "bg-[#FAFAFA] text-[#4A4E57] hover:bg-[#F0EFEB]"
+                    }`}
+                  >
+                    MBA Management &amp; Operations Track
+                  </button>
+                </div>
+
+                {formSettings && (
+                  <div className="flex items-center gap-3">
+                    <span className="text-xs text-[#737883]">
+                      Role Status: <strong>{formSettings[studioRole].isOpen ? "OPEN" : "CLOSED"}</strong>
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => toggleRoleOpen(studioRole)}
+                      className={`px-3.5 py-1.5 rounded-xl text-xs font-mono font-semibold transition-all flex items-center gap-1.5 ${
+                        formSettings[studioRole].isOpen
+                          ? "bg-emerald-100 text-emerald-800 hover:bg-emerald-200"
+                          : "bg-rose-100 text-rose-800 hover:bg-rose-200"
+                      }`}
+                    >
+                      {formSettings[studioRole].isOpen ? <Unlock className="w-3.5 h-3.5" /> : <Lock className="w-3.5 h-3.5" />}
+                      <span>{formSettings[studioRole].isOpen ? "Turn Form OFF" : "Turn Form ON"}</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Role Header Info */}
+              {formSettings && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 rounded-2xl border border-[#E9E7E1] bg-[#FAFAFA]">
+                  <div>
+                    <label className="block text-[10px] font-mono uppercase text-[#737883] mb-1">
+                      Role Headline
+                    </label>
+                    <input
+                      type="text"
+                      value={formSettings[studioRole].headline}
+                      onChange={(e) => {
+                        setFormSettings({
+                          ...formSettings,
+                          [studioRole]: { ...formSettings[studioRole], headline: e.target.value },
+                        });
+                      }}
+                      className="w-full px-3 py-1.5 rounded-xl border border-[#E9E7E1] bg-white text-xs font-medium text-[#0B0C0E]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-mono uppercase text-[#737883] mb-1">
+                      Message Shown When Application is Closed
+                    </label>
+                    <input
+                      type="text"
+                      value={formSettings[studioRole].closedMessage}
+                      onChange={(e) => {
+                        setFormSettings({
+                          ...formSettings,
+                          [studioRole]: { ...formSettings[studioRole], closedMessage: e.target.value },
+                        });
+                      }}
+                      className="w-full px-3 py-1.5 rounded-xl border border-[#E9E7E1] bg-white text-xs font-medium text-[#0B0C0E]"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Field Configuration Header & Action */}
+              <div className="flex items-center justify-between">
+                <div>
+                  <h4 className="text-sm font-semibold text-[#0B0C0E]">Form Field Requirements &amp; Steps</h4>
+                  <p className="text-xs text-[#737883]">
+                    Toggle field visibility and mark requirements as mandatory so candidates cannot go to the next step without filling.
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setNewFieldStep(6);
+                    setCustomFieldModalOpen(true);
+                  }}
+                  className="px-3.5 py-1.5 rounded-xl border border-[#2F5BFF] bg-[#2F5BFF]/10 text-[#2F5BFF] hover:bg-[#2F5BFF] hover:text-white text-xs font-medium transition-all flex items-center gap-1.5"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>+ Add Custom Question</span>
+                </button>
+              </div>
+
+              {/* Step-by-Step Fields Studio */}
+              {formSettings && (
+                <div className="space-y-6">
+                  {[1, 2, 3, 4, 5, 6, 7].map((stepNumber) => {
+                    const stepFields = formSettings[studioRole].fields.filter((f) => f.step === stepNumber);
+                    if (stepFields.length === 0 && stepNumber !== 6) return null;
+
+                    const stepLabels: Record<number, string> = {
+                      1: "Step 1: Personal & Identification Details",
+                      2: "Step 2: Academic Qualifications",
+                      3: "Step 3: Target Role & Position Track",
+                      4: "Step 4: Technical Skills & Profile Links",
+                      5: "Step 5: Relocation & In-person Presence",
+                      6: "Step 6: Custom Role Questions & Assessments",
+                      7: "Step 7: Curriculum Vitae / Resume Document",
+                    };
+
+                    return (
+                      <div key={stepNumber} className="border border-[#E9E7E1] rounded-2xl overflow-hidden bg-white">
+                        <div className="px-4 py-2.5 bg-[#FAFAFA] border-b border-[#E9E7E1] flex items-center justify-between">
+                          <span className="font-mono text-xs font-bold text-[#0B0C0E]">
+                            {stepLabels[stepNumber] || `Step ${stepNumber}`}
+                          </span>
+                          <span className="text-[11px] text-[#737883] font-mono">
+                            {stepFields.length} field{stepFields.length !== 1 ? "s" : ""}
+                          </span>
+                        </div>
+
+                        {stepFields.length === 0 ? (
+                          <div className="p-4 text-center text-xs text-[#737883]">
+                            No custom questions added yet. Click &quot;+ Add Custom Question&quot; above to add questions for this step.
+                          </div>
+                        ) : (
+                          <div className="divide-y divide-[#E9E7E1]">
+                            {stepFields.map((field) => (
+                              <div
+                                key={field.id}
+                                className="p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-[#FAFAFA]/60 transition-colors"
+                              >
+                                <div className="space-y-0.5">
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-xs font-semibold text-[#0B0C0E]">{field.label}</span>
+                                    {field.required && (
+                                      <span className="text-rose-500 font-bold" title="Required field">*</span>
+                                    )}
+                                    <span className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-[#F0EFEB] text-[#737883]">
+                                      {field.id}
+                                    </span>
+                                    <span className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200">
+                                      {field.type}
+                                    </span>
+                                    {field.isCustom && (
+                                      <span className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-purple-50 text-purple-700 border border-purple-200">
+                                        Custom
+                                      </span>
+                                    )}
+                                  </div>
+                                  {field.placeholder && (
+                                    <p className="text-[11px] text-[#737883]">Placeholder: {field.placeholder}</p>
+                                  )}
+                                </div>
+
+                                <div className="flex items-center gap-4 shrink-0">
+                                  {/* Enabled Toggle */}
+                                  <label className="flex items-center gap-2 cursor-pointer text-xs">
+                                    <input
+                                      type="checkbox"
+                                      checked={field.enabled}
+                                      onChange={() => toggleFieldEnabled(studioRole, field.id)}
+                                      className="rounded border-[#E9E7E1] text-[#2F5BFF] focus:ring-0"
+                                    />
+                                    <span className={field.enabled ? "text-[#0B0C0E] font-medium" : "text-[#737883]"}>
+                                      Visible in Form
+                                    </span>
+                                  </label>
+
+                                  {/* Required Toggle */}
+                                  <label className="flex items-center gap-2 cursor-pointer text-xs">
+                                    <input
+                                      type="checkbox"
+                                      checked={field.required}
+                                      onChange={() => toggleFieldRequired(studioRole, field.id)}
+                                      className="rounded border-[#E9E7E1] text-rose-600 focus:ring-0"
+                                    />
+                                    <span className={field.required ? "text-rose-600 font-semibold" : "text-[#737883]"}>
+                                      Mandatory (* Required to proceed)
+                                    </span>
+                                  </label>
+
+                                  {/* Delete Custom Field */}
+                                  {field.isCustom && (
+                                    <button
+                                      type="button"
+                                      onClick={() => handleDeleteCustomField(studioRole, field.id)}
+                                      className="p-1 rounded text-red-500 hover:bg-red-50 transition-colors"
+                                      title="Delete custom question"
+                                    >
+                                      <Trash2 className="w-3.5 h-3.5" />
+                                    </button>
+                                  )}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* Bottom Save Action Button */}
+              <div className="pt-4 border-t border-[#E9E7E1] flex justify-end">
+                <button
+                  type="button"
+                  onClick={() => handleSaveSettings()}
+                  disabled={formSettingsSaving}
+                  className="px-6 py-3 rounded-xl bg-[#0B0C0E] hover:bg-black text-white text-xs font-semibold shadow-sm transition-all flex items-center gap-2 disabled:opacity-50"
+                >
+                  {formSettingsSaving ? (
+                    <RefreshCw className="w-4 h-4 animate-spin text-[#2F5BFF]" />
+                  ) : (
+                    <Check className="w-4 h-4 text-emerald-400" />
+                  )}
+                  <span>{formSettingsSaving ? "Saving Configuration..." : "Save All Form Configuration"}</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </main>
 
       {/* =========================================================================
@@ -1360,6 +2076,218 @@ export default function AdminPage() {
           <div className="bg-white p-4 rounded-xl border border-[#E9E7E1] shadow-lg flex items-center gap-2 text-xs font-mono">
             <RefreshCw className="w-4 h-4 animate-spin text-[#2F5BFF]" />
             <span>Loading applicant dossier...</span>
+          </div>
+        </div>
+      )}
+
+      {/* CREATE NEW BIN MODAL */}
+      {newBinModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
+          <div className="w-full max-w-md bg-white rounded-3xl border border-[#E9E7E1] p-6 shadow-2xl space-y-5 animate-in fade-in zoom-in-95">
+            <div className="flex items-center justify-between pb-3 border-b border-[#E9E7E1]">
+              <div className="flex items-center gap-2">
+                <FolderArchive className="w-4 h-4 text-[#2F5BFF]" />
+                <h3 className="text-sm font-bold text-[#0B0C0E]">Create New Intake Cohort Bin</h3>
+              </div>
+              <button onClick={() => setNewBinModalOpen(false)} className="text-[#737883] hover:text-[#0B0C0E]">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateBin} className="space-y-4">
+              <div>
+                <label className="block text-xs font-medium text-[#0B0C0E] mb-1">
+                  Cohort / Bin Name *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={newBinName}
+                  onChange={(e) => setNewBinName(e.target.value)}
+                  placeholder="e.g. Spring 2027 Walk-in Drive"
+                  className="w-full px-3 py-2 rounded-xl border border-[#E9E7E1] bg-[#FAFAFA] text-xs text-[#0B0C0E] focus:outline-none focus:border-[#0B0C0E]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-[#0B0C0E] mb-1">
+                  Description / Purpose
+                </label>
+                <textarea
+                  rows={2}
+                  value={newBinDesc}
+                  onChange={(e) => setNewBinDesc(e.target.value)}
+                  placeholder="e.g. Intake cohort for Spring 2027 recruitment cycle"
+                  className="w-full px-3 py-2 rounded-xl border border-[#E9E7E1] bg-[#FAFAFA] text-xs text-[#0B0C0E] focus:outline-none focus:border-[#0B0C0E] resize-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-[#0B0C0E] mb-1">
+                  Target Candidate Roles
+                </label>
+                <select
+                  value={newBinRole}
+                  onChange={(e) => setNewBinRole(e.target.value as "all" | "btech" | "mba")}
+                  className="w-full px-3 py-2 rounded-xl border border-[#E9E7E1] bg-[#FAFAFA] text-xs text-[#0B0C0E] focus:outline-none"
+                >
+                  <option value="all">All Roles (Both B.Tech &amp; MBA)</option>
+                  <option value="btech">B.Tech ML Only</option>
+                  <option value="mba">MBA Commercial Only</option>
+                </select>
+              </div>
+
+              <div className="pt-2 flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setNewBinModalOpen(false)}
+                  className="px-4 py-2 rounded-xl border border-[#E9E7E1] text-xs font-medium text-[#737883] hover:text-[#0B0C0E]"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={newBinCreating || !newBinName.trim()}
+                  className="px-5 py-2 rounded-xl bg-[#0B0C0E] text-white text-xs font-semibold hover:bg-black transition-colors disabled:opacity-50"
+                >
+                  {newBinCreating ? "Creating..." : "Create Bin"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ADD CUSTOM FIELD MODAL */}
+      {customFieldModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
+          <div className="w-full max-w-lg bg-white rounded-3xl border border-[#E9E7E1] p-6 shadow-2xl space-y-5 animate-in fade-in zoom-in-95">
+            <div className="flex items-center justify-between pb-3 border-b border-[#E9E7E1]">
+              <div className="flex items-center gap-2">
+                <Plus className="w-4 h-4 text-[#2F5BFF]" />
+                <h3 className="text-sm font-bold text-[#0B0C0E]">Add Question to {studioRole.toUpperCase()} Form</h3>
+              </div>
+              <button onClick={() => setCustomFieldModalOpen(false)} className="text-[#737883] hover:text-[#0B0C0E]">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleAddCustomField} className="space-y-4">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="col-span-2">
+                  <label className="block text-xs font-medium text-[#0B0C0E] mb-1">
+                    Question / Field Label *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={newFieldLabel}
+                    onChange={(e) => setNewFieldLabel(e.target.value)}
+                    placeholder="e.g. Portfolio Website or Kaggle Profile"
+                    className="w-full px-3 py-2 rounded-xl border border-[#E9E7E1] bg-[#FAFAFA] text-xs text-[#0B0C0E] focus:outline-none focus:border-[#0B0C0E]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-[#0B0C0E] mb-1">
+                    Input Field Type
+                  </label>
+                  <select
+                    value={newFieldType}
+                    onChange={(e) => setNewFieldType(e.target.value as "text" | "number" | "select" | "textarea" | "url")}
+                    className="w-full px-3 py-2 rounded-xl border border-[#E9E7E1] bg-[#FAFAFA] text-xs text-[#0B0C0E] focus:outline-none"
+                  >
+                    <option value="text">Single Line Text</option>
+                    <option value="textarea">Multi-line Paragraph</option>
+                    <option value="number">Numeric</option>
+                    <option value="url">Web Link (URL)</option>
+                    <option value="select">Dropdown Selection</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-[#0B0C0E] mb-1">
+                    Form Step Placement
+                  </label>
+                  <select
+                    value={newFieldStep}
+                    onChange={(e) => setNewFieldStep(Number(e.target.value))}
+                    className="w-full px-3 py-2 rounded-xl border border-[#E9E7E1] bg-[#FAFAFA] text-xs text-[#0B0C0E] focus:outline-none"
+                  >
+                    <option value={1}>Step 1: Personal</option>
+                    <option value={2}>Step 2: Academics</option>
+                    <option value={3}>Step 3: Position</option>
+                    <option value={4}>Step 4: Skills</option>
+                    <option value={5}>Step 5: Relocation</option>
+                    <option value={6}>Step 6: Custom Questions</option>
+                  </select>
+                </div>
+
+                <div className="col-span-2">
+                  <label className="block text-xs font-medium text-[#0B0C0E] mb-1">
+                    Placeholder Text (Optional)
+                  </label>
+                  <input
+                    type="text"
+                    value={newFieldPlaceholder}
+                    onChange={(e) => setNewFieldPlaceholder(e.target.value)}
+                    placeholder="e.g. https://portfolio.dev or Enter details..."
+                    className="w-full px-3 py-2 rounded-xl border border-[#E9E7E1] bg-[#FAFAFA] text-xs text-[#0B0C0E] focus:outline-none focus:border-[#0B0C0E]"
+                  />
+                </div>
+
+                {newFieldType === "select" && (
+                  <div className="col-span-2">
+                    <label className="block text-xs font-medium text-[#0B0C0E] mb-1">
+                      Options (Comma-separated) *
+                    </label>
+                    <input
+                      type="text"
+                      value={newFieldOptions}
+                      onChange={(e) => setNewFieldOptions(e.target.value)}
+                      placeholder="e.g. Option A, Option B, Option C"
+                      className="w-full px-3 py-2 rounded-xl border border-[#E9E7E1] bg-[#FAFAFA] text-xs text-[#0B0C0E] focus:outline-none focus:border-[#0B0C0E]"
+                    />
+                  </div>
+                )}
+
+                <div className="col-span-2 pt-2">
+                  <label className="flex items-center gap-2 cursor-pointer p-3 rounded-xl border border-rose-200 bg-rose-50/50">
+                    <input
+                      type="checkbox"
+                      checked={newFieldRequired}
+                      onChange={(e) => setNewFieldRequired(e.target.checked)}
+                      className="rounded border-rose-300 text-rose-600 focus:ring-0"
+                    />
+                    <div>
+                      <span className="text-xs font-bold text-rose-700 block">
+                        Mandatory Requirement (* Required)
+                      </span>
+                      <span className="text-[11px] text-rose-600">
+                        Candidates will not be allowed to go to the next step without answering this field.
+                      </span>
+                    </div>
+                  </label>
+                </div>
+              </div>
+
+              <div className="pt-2 flex justify-end gap-2 border-t border-[#E9E7E1]">
+                <button
+                  type="button"
+                  onClick={() => setCustomFieldModalOpen(false)}
+                  className="px-4 py-2 rounded-xl border border-[#E9E7E1] text-xs font-medium text-[#737883] hover:text-[#0B0C0E]"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={!newFieldLabel.trim()}
+                  className="px-5 py-2 rounded-xl bg-[#2F5BFF] hover:bg-[#2563EB] text-white text-xs font-semibold shadow-xs transition-colors disabled:opacity-50"
+                >
+                  Add Field to Form
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
