@@ -96,6 +96,9 @@ CREATE TABLE IF NOT EXISTS applications (
   previous_experience TEXT,
   resume_object_key TEXT,
   application_status TEXT NOT NULL DEFAULT 'Submitted',
+  cohort_id TEXT DEFAULT 'bin-1',
+  cohort_name TEXT DEFAULT 'KIET Group of Institutions (Nov 2026 Archive)',
+  custom_fields TEXT,
   submitted_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
@@ -186,6 +189,11 @@ function getLocalDb(): LocalSqliteDb {
 
   // Initialize schema with embedded SQL
   db.exec(EMBEDDED_SCHEMA_SQL);
+
+  // Ensure table has latest columns for cohorts and custom fields
+  try { db.exec("ALTER TABLE applications ADD COLUMN cohort_id TEXT"); } catch {}
+  try { db.exec("ALTER TABLE applications ADD COLUMN cohort_name TEXT"); } catch {}
+  try { db.exec("ALTER TABLE applications ADD COLUMN custom_fields TEXT"); } catch {}
 
   // Ensure positions contains only the TWO official openings: BTech ML & MBA
   db.exec("DELETE FROM positions WHERE id NOT IN ('btech-ml', 'mba-role')");

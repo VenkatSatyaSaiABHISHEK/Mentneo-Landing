@@ -73,9 +73,13 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Target cohort bin for incoming submission
-    const targetBinId = settings.btech.targetBinId || settings.activeBinId || "bin-1";
-    const targetBin = settings.bins.find((b) => b.id === targetBinId) || settings.bins[0];
+    // Target cohort bin for incoming submission: strictly uses active intake bin
+    const targetBin =
+      settings.bins.find((b) => b.id === settings.activeBinId) ||
+      settings.bins.find((b) => b.status === "active") ||
+      settings.bins.find((b) => b.id === settings.btech.targetBinId) ||
+      settings.bins[0];
+    const targetBinId = targetBin.id;
 
     // Duplicate submission prevention: check existing applications in THIS cohort bin only
     try {

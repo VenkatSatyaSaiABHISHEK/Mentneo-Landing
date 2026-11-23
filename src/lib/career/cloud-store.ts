@@ -217,9 +217,8 @@ async function getApplicationsFromSupabaseRest(): Promise<StoredApplication[]> {
       const a = raw as unknown as StoredApplication;
       return {
         ...a,
-        cohort_id: a.cohort_id || "bin-1",
-        cohort_name: a.cohort_name || "KIET Group of Institutions (Nov 2026 Archive)",
-        college_name: a.college_name || "KIET Group of Institutions",
+        cohort_id: a.cohort_id || undefined,
+        cohort_name: a.cohort_name || undefined,
         positions: posMap[a.application_reference] || [],
       };
     });
@@ -282,7 +281,7 @@ export async function getAllStoredApplications(): Promise<StoredApplication[]> {
     console.warn("[CloudStore] Supabase JS query notice:", (err as Error).message);
   }
 
-  // 3. Tertiary: Cloudflare R2 persistent storage (merges any records)
+  // 3. Tertiary: Cloudflare R2 persistent storage (authoritative for cohort bins & custom fields)
   try {
     const r2Apps = await getApplicationsFromR2();
     for (const app of r2Apps) {
@@ -290,8 +289,16 @@ export async function getAllStoredApplications(): Promise<StoredApplication[]> {
         map.set(app.application_reference, app);
       } else {
         const existing = map.get(app.application_reference)!;
-        if (!existing.positions || existing.positions.length === 0) {
-          existing.positions = app.positions || [];
+        if (app.cohort_id) existing.cohort_id = app.cohort_id;
+        if (app.cohort_name) existing.cohort_name = app.cohort_name;
+        if (app.custom_fields && Object.keys(app.custom_fields).length > 0) {
+          existing.custom_fields = app.custom_fields;
+        }
+        if ((!existing.positions || existing.positions.length === 0) && app.positions?.length) {
+          existing.positions = app.positions;
+        }
+        if (app.college_name && (!existing.college_name || existing.college_name === "KIET Group of Institutions")) {
+          existing.college_name = app.college_name;
         }
       }
     }
@@ -320,7 +327,7 @@ export async function getAllStoredApplications(): Promise<StoredApplication[]> {
 
   const list = Array.from(map.values());
   for (const a of list) {
-    if (!a.cohort_id) {
+    if (!a.cohort_id || a.cohort_id === "bin-2") {
       a.cohort_id = "bin-1";
       a.cohort_name = "KIET Group of Institutions (Nov 2026 Archive)";
     }
