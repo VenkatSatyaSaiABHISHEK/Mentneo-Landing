@@ -103,6 +103,13 @@ export default function AdminPage() {
   const [newBinRole, setNewBinRole] = useState<"all" | "btech" | "mba">("all");
   const [newBinCreating, setNewBinCreating] = useState(false);
 
+  // Delete Bin Modal
+  const [deleteBinModalOpen, setDeleteBinModalOpen] = useState(false);
+  const [binToDelete, setBinToDelete] = useState<FormBin | null>(null);
+  const [deleteConfirmText, setDeleteConfirmText] = useState("");
+  const [binDeleting, setBinDeleting] = useState(false);
+  const [deleteBinError, setDeleteBinError] = useState("");
+
   // Custom Field Modal
   const [customFieldModalOpen, setCustomFieldModalOpen] = useState(false);
   const [newFieldLabel, setNewFieldLabel] = useState("");
@@ -295,19 +302,71 @@ export default function AdminPage() {
   };
 
   const handleSetActiveBin = async (binId: string) => {
-    if (!formSettings) return;
-    const updated: CareerFormSettings = {
-      ...formSettings,
-      activeBinId: binId,
-      bins: formSettings.bins.map((b) => ({
-        ...b,
-        status: b.id === binId ? "active" : b.status === "active" ? "archived" : b.status,
-      })),
-      btech: { ...formSettings.btech, targetBinId: binId },
-      mba: { ...formSettings.mba, targetBinId: binId },
-    };
-    setFormSettings(updated);
-    await handleSaveSettings(updated);
+    try {
+      const res = await fetch("/api/ca/admin/bins", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ binId }),
+      });
+      const json = await res.json();
+      if (res.ok && json.success) {
+        const conf = json.data || json.settings;
+        if (conf) {
+          setFormSettings(conf);
+          if (Array.isArray(conf.bins)) setBinsList(conf.bins);
+        }
+        await loadFormConfig();
+      }
+    } catch (err) {
+      console.error("Activate bin error:", err);
+    }
+  };
+
+  const handleOpenDeleteBinModal = (bin: FormBin) => {
+    setBinToDelete(bin);
+    setDeleteConfirmText("");
+    setDeleteBinError("");
+    setDeleteBinModalOpen(true);
+  };
+
+  const handleConfirmDeleteBin = async () => {
+    if (!binToDelete) return;
+    const requiredText = binToDelete.id === "bin-1" ? "DELETE KIET ARCHIVE" : "DELETE";
+    if (deleteConfirmText.trim() !== requiredText) {
+      setDeleteBinError(`Please type '${requiredText}' to confirm.`);
+      return;
+    }
+
+    setBinDeleting(true);
+    setDeleteBinError("");
+    try {
+      const res = await fetch("/api/ca/admin/bins", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          binId: binToDelete.id,
+          confirmText: deleteConfirmText.trim(),
+        }),
+      });
+      const json = await res.json();
+      if (res.ok && json.success) {
+        setDeleteBinModalOpen(false);
+        setBinToDelete(null);
+        setDeleteConfirmText("");
+        const conf = json.data || json.settings;
+        if (conf) {
+          setFormSettings(conf);
+          if (Array.isArray(conf.bins)) setBinsList(conf.bins);
+        }
+        await loadFormConfig();
+      } else {
+        setDeleteBinError(json.error || "Failed to delete cohort bin");
+      }
+    } catch (err: unknown) {
+      setDeleteBinError((err as Error).message);
+    } finally {
+      setBinDeleting(false);
+    }
   };
 
   const handleCreateBin = async (e: React.FormEvent) => {
@@ -1520,22 +1579,27 @@ export default function AdminPage() {
                         }`}
                       >
                         <div className="space-y-1">
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-2 flex-wrap">
                             <span className="font-bold text-xs text-[#0B0C0E]">{bin.name}</span>
                             <span className="font-mono text-[10px] px-2 py-0.5 rounded-md bg-white border border-[#E9E7E1] text-[#737883]">
                               {bin.id}
                             </span>
-                            {isActive && (
-                              <span className="font-mono text-[10px] px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 font-semibold border border-emerald-200">
+                            {isActive ? (
+                              <span className="font-mono text-[10px] px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 font-semibold border border-emerald-200 flex items-center gap-1">
+                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                                 ACTIVE INTAKE
+                              </span>
+                            ) : (
+                              <span className="font-mono text-[10px] px-2 py-0.5 rounded-md bg-[#F0EFEB] text-[#60646C] border border-[#E0DED8]">
+                                ARCHIVED COHORT
                               </span>
                             )}
                           </div>
                           <p className="text-xs text-[#737883] leading-relaxed">{bin.description}</p>
                         </div>
 
-                        <div className="flex items-center gap-3 shrink-0">
-                          <div className="text-right">
+                        <div className="flex items-center gap-2.5 shrink-0">
+                          <div className="text-right pr-2">
                             <span className="font-mono text-sm font-bold text-[#0B0C0E] block">
                               {bin.applicationCount ?? 0}
                             </span>
@@ -1546,11 +1610,29 @@ export default function AdminPage() {
                             <button
                               type="button"
                               onClick={() => handleSetActiveBin(bin.id)}
-                              className="px-3 py-1.5 rounded-xl border border-[#E9E7E1] bg-white text-xs font-medium hover:border-[#0B0C0E] transition-colors"
+                              className="px-3 py-1.5 rounded-xl border border-[#E9E7E1] bg-white text-xs font-medium hover:border-[#0B0C0E] hover:bg-[#FAFAFA] transition-colors"
                             >
                               Set as Active
                             </button>
                           )}
+
+                          <button
+                            type="button"
+                            onClick={() => handleOpenDeleteBinModal(bin)}
+                            disabled={isActive}
+                            title={
+                              isActive
+                                ? "Active intake bin cannot be deleted. Set another bin as active first."
+                                : `Delete cohort bin '${bin.name}'`
+                            }
+                            className={`p-2 rounded-xl border transition-colors flex items-center justify-center ${
+                              isActive
+                                ? "opacity-30 cursor-not-allowed border-[#E9E7E1] bg-[#F5F5F5] text-[#999999]"
+                                : "border-[#E9E7E1] bg-white text-red-600 hover:bg-red-50 hover:border-red-200"
+                            }`}
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
                         </div>
                       </div>
                     );
@@ -2172,6 +2254,94 @@ export default function AdminPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* DELETE BIN CONFIRMATION MODAL */}
+      {deleteBinModalOpen && binToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
+          <div className="w-full max-w-md bg-white rounded-3xl border border-[#E9E7E1] p-6 shadow-2xl space-y-5 animate-in fade-in zoom-in-95">
+            <div className="flex items-center justify-between pb-3 border-b border-[#E9E7E1]">
+              <div className="flex items-center gap-2 text-red-600">
+                <Trash2 className="w-4 h-4" />
+                <h3 className="text-sm font-bold text-[#0B0C0E]">Delete Cohort Bin</h3>
+              </div>
+              <button
+                onClick={() => {
+                  setDeleteBinModalOpen(false);
+                  setBinToDelete(null);
+                }}
+                className="text-[#737883] hover:text-[#0B0C0E]"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="p-3.5 rounded-2xl bg-red-50/60 border border-red-200/60 text-xs text-red-800 space-y-1.5">
+              <p className="font-semibold flex items-center gap-1.5">
+                <AlertCircle className="w-4 h-4 shrink-0 text-red-600" />
+                <span>Permanent Deletion Warning</span>
+              </p>
+              <p className="leading-relaxed text-[11px] text-red-700">
+                You are about to delete cohort bin <strong>&ldquo;{binToDelete.name}&rdquo;</strong> ({binToDelete.id}) containing <strong>{binToDelete.applicationCount || 0} candidate records</strong>.
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <label className="block text-xs font-medium text-[#0B0C0E]">
+                To confirm permanent deletion, please type{" "}
+                <span className="font-mono font-bold text-red-600 bg-red-50 px-1.5 py-0.5 rounded border border-red-200">
+                  {binToDelete.id === "bin-1" ? "DELETE KIET ARCHIVE" : "DELETE"}
+                </span>{" "}
+                below:
+              </label>
+              <input
+                type="text"
+                value={deleteConfirmText}
+                onChange={(e) => setDeleteConfirmText(e.target.value)}
+                placeholder={binToDelete.id === "bin-1" ? "Type DELETE KIET ARCHIVE" : "Type DELETE"}
+                className="w-full px-3.5 py-2.5 rounded-xl border border-[#E9E7E1] bg-[#FAFAFA] font-mono text-xs text-[#0B0C0E] focus:outline-none focus:border-red-500 focus:bg-white"
+                autoFocus
+              />
+              {deleteBinError && (
+                <p className="text-[11px] text-red-600 font-medium">{deleteBinError}</p>
+              )}
+            </div>
+
+            <div className="pt-2 flex items-center justify-end gap-2 border-t border-[#E9E7E1]">
+              <button
+                type="button"
+                onClick={() => {
+                  setDeleteBinModalOpen(false);
+                  setBinToDelete(null);
+                }}
+                className="px-4 py-2 rounded-xl border border-[#E9E7E1] text-xs font-medium text-[#737883] hover:text-[#0B0C0E]"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmDeleteBin}
+                disabled={
+                  binDeleting ||
+                  deleteConfirmText.trim() !== (binToDelete.id === "bin-1" ? "DELETE KIET ARCHIVE" : "DELETE")
+                }
+                className="px-5 py-2 rounded-xl bg-red-600 text-white text-xs font-semibold hover:bg-red-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5 shadow-sm"
+              >
+                {binDeleting ? (
+                  <>
+                    <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                    <span>Deleting Bin...</span>
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>Permanently Delete Bin</span>
+                  </>
+                )}
+              </button>
+            </div>
           </div>
         </div>
       )}

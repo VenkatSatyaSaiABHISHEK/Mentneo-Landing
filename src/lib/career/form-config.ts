@@ -54,14 +54,6 @@ export const DEFAULT_BINS: FormBin[] = [
     status: "archived",
     createdAt: "2026-11-10T00:00:00.000Z",
   },
-  {
-    id: "bin-2",
-    name: "Active Cohort · 2026-2027 Recruitment",
-    description: "Current intake bin for incoming candidate submissions.",
-    targetRole: "all",
-    status: "active",
-    createdAt: "2026-11-23T00:00:00.000Z",
-  },
 ];
 
 export const DEFAULT_BTECH_FIELDS: FormFieldConfig[] = [
@@ -122,7 +114,7 @@ export const DEFAULT_MBA_FIELDS: FormFieldConfig[] = [
 
 export const DEFAULT_FORM_SETTINGS: CareerFormSettings = {
   globalOpen: true,
-  activeBinId: "bin-2",
+  activeBinId: "bin-1",
   bins: DEFAULT_BINS,
   btech: {
     isOpen: true,
@@ -130,7 +122,7 @@ export const DEFAULT_FORM_SETTINGS: CareerFormSettings = {
     roleTitle: "Machine Learning Engineer",
     headline: "Core AI & Foundation Model Architecture",
     description: "Work on Mentneo's proprietary foundation models, neural inference pipelines, and agentic reasoning systems.",
-    targetBinId: "bin-2",
+    targetBinId: "bin-1",
     closedMessage: "Applications for the B.Tech Machine Learning cohort are currently closed.",
     fields: DEFAULT_BTECH_FIELDS,
   },
@@ -140,7 +132,7 @@ export const DEFAULT_FORM_SETTINGS: CareerFormSettings = {
     roleTitle: "Management & Business Operations",
     headline: "Enterprise Strategy & GTM Scaling",
     description: "Lead commercial expansion, enterprise partnerships, and operational scale for sovereign artificial intelligence.",
-    targetBinId: "bin-2",
+    targetBinId: "bin-1",
     closedMessage: "Applications for the MBA Commercial cohort are currently closed.",
     fields: DEFAULT_MBA_FIELDS,
   },

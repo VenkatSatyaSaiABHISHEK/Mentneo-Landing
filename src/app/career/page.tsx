@@ -64,7 +64,11 @@ export default function CareerPortalPage() {
   return (
     <div className="min-h-screen bg-white text-[#111111] flex flex-col justify-between selection:bg-black selection:text-white antialiased font-sans">
       {/* Clean White Google/OpenAI Style Career Navbar with live status */}
-      <CareerNavbar isOpen={anyOpen} btechOpen={btechOpen} mbaOpen={mbaOpen} />
+      <CareerNavbar
+        isOpen={formConfig ? anyOpen : undefined}
+        btechOpen={formConfig ? btechOpen : undefined}
+        mbaOpen={formConfig ? mbaOpen : undefined}
+      />
 
       <main className="flex-1 pt-28 pb-20">
         {/* =========================================================================
@@ -150,7 +154,12 @@ export default function CareerPortalPage() {
           </div>
 
           {/* Dynamic Active Roles: Closed roles are completely hidden */}
-          {anyOpen ? (
+          {formConfig === null ? (
+            <div className="flex flex-col items-center justify-center py-20 space-y-3">
+              <div className="w-6 h-6 border-2 border-black border-t-transparent rounded-full animate-spin" />
+              <span className="text-xs font-mono text-[#777777]">Checking live cohort status...</span>
+            </div>
+          ) : anyOpen ? (
             <div className={onlyOneOpen ? "max-w-2xl mx-auto" : "grid grid-cols-1 md:grid-cols-2 gap-8"}>
               {/* ─── ROLE 1: B.TECH (MACHINE LEARNING) ─── */}
               {btechOpen && (
