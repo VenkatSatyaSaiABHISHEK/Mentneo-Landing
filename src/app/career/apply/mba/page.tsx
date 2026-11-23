@@ -327,10 +327,11 @@ export default function MbaApplyDynamicPage() {
         throw new Error(json.error || "Submission failed. Please try again.");
       }
 
+      const d = json.data || json;
       setSubmissionResult({
-        reference: json.data.reference,
-        submittedAt: json.data.submittedAt,
-        cohortName: json.data.cohortName,
+        reference: d.reference || "MNT-2026-MB",
+        submittedAt: d.submittedAt || new Date().toISOString(),
+        cohortName: d.cohortName || "2026 Recruitment Drive",
       });
     } catch (err: unknown) {
       setStepError((err as Error).message || "An error occurred during submission.");

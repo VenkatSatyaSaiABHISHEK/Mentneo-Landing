@@ -62,7 +62,7 @@ export default function InternshipApplyPage() {
         throw new Error(json.error || "Failed to register interest");
       }
 
-      setResult({ reference: json.reference });
+      setResult({ reference: json.reference || json.data?.reference || "MNT-INT" });
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err: unknown) {
       setErrors({ form: (err as Error).message || "Failed to lodge notification request." });

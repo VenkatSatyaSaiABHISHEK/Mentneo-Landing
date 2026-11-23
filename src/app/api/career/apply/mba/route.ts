@@ -243,8 +243,7 @@ export async function POST(req: NextRequest) {
       customFields
     );
 
-    return NextResponse.json({
-      success: true,
+    const resultData = {
       reference,
       applicantType: "mba",
       fullName,
@@ -253,6 +252,12 @@ export async function POST(req: NextRequest) {
       cohortId: targetBin.id,
       cohortName: targetBin.name,
       submittedAt: new Date().toISOString(),
+    };
+
+    return NextResponse.json({
+      success: true,
+      data: resultData,
+      ...resultData,
     });
   } catch (err: unknown) {
     console.error("Error processing MBA application:", (err as Error).message);
