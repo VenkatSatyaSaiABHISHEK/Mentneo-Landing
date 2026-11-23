@@ -56,13 +56,18 @@ export async function GET(req: NextRequest) {
       );
     }
 
+    const dataObj = {
+      globalOpen: settings.globalOpen,
+      btech: sanitizeRole(settings.btech),
+      mba: sanitizeRole(settings.mba),
+      activeBinName: activeBin?.name || "Active Cohort",
+    };
+
     return NextResponse.json(
       {
         success: true,
-        globalOpen: settings.globalOpen,
-        btech: sanitizeRole(settings.btech),
-        mba: sanitizeRole(settings.mba),
-        activeBinName: activeBin?.name || "Active Cohort",
+        data: dataObj,
+        ...dataObj,
       },
       {
         headers: {

@@ -7,16 +7,25 @@ import { Menu, X } from "lucide-react";
 
 interface CareerNavbarProps {
   isOpen?: boolean;
+  btechOpen?: boolean;
+  mbaOpen?: boolean;
 }
 
-export default function CareerNavbar({ isOpen }: CareerNavbarProps) {
+export default function CareerNavbar({ isOpen, btechOpen: propBtechOpen, mbaOpen: propMbaOpen }: CareerNavbarProps) {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [dynamicOpen, setDynamicOpen] = useState<boolean>(isOpen !== undefined ? isOpen : true);
+  const [dynamicOpen, setDynamicOpen] = useState<boolean>(isOpen !== undefined ? isOpen : false);
+  const [btechActive, setBtechActive] = useState<boolean>(propBtechOpen !== undefined ? propBtechOpen : false);
+  const [mbaActive, setMbaActive] = useState<boolean>(propMbaOpen !== undefined ? propMbaOpen : false);
 
   useEffect(() => {
-    if (isOpen !== undefined) {
-      setDynamicOpen(isOpen);
+    if (isOpen !== undefined) setDynamicOpen(isOpen);
+    if (propBtechOpen !== undefined) setBtechActive(propBtechOpen);
+    if (propMbaOpen !== undefined) setMbaActive(propMbaOpen);
+  }, [isOpen, propBtechOpen, propMbaOpen]);
+
+  useEffect(() => {
+    if (isOpen !== undefined && propBtechOpen !== undefined && propMbaOpen !== undefined) {
       return;
     }
 
@@ -25,15 +34,19 @@ export default function CareerNavbar({ isOpen }: CareerNavbarProps) {
         const res = await fetch(`/api/career/form-config?t=${Date.now()}`, { cache: "no-store" });
         if (res.ok) {
           const json = await res.json();
-          if (json.success && json.data) {
-            const open = json.data.globalOpen && (json.data.btech.isOpen || json.data.mba.isOpen);
-            setDynamicOpen(open);
+          const d = json.data || json;
+          if (json.success && d) {
+            const bt = !!(d.globalOpen && d.btech?.isOpen);
+            const mb = !!(d.globalOpen && d.mba?.isOpen);
+            setBtechActive(bt);
+            setMbaActive(mb);
+            setDynamicOpen(bt || mb);
           }
         }
       } catch {}
     }
     checkStatus();
-  }, [isOpen]);
+  }, [isOpen, propBtechOpen, propMbaOpen]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -62,18 +75,22 @@ export default function CareerNavbar({ isOpen }: CareerNavbarProps) {
 
         {/* Center / Right Clean Menu with Solid Dark Text (No Blinking Dots, No Admin Buttons) */}
         <nav className="hidden md:flex items-center gap-8 text-[14px] font-medium text-[#111111]">
-          <Link
-            href="/career#btech"
-            className="text-[#111111] hover:text-black transition-colors"
-          >
-            B.Tech (Machine Learning)
-          </Link>
-          <Link
-            href="/career#mba"
-            className="text-[#111111] hover:text-black transition-colors"
-          >
-            MBA Role
-          </Link>
+          {btechActive && (
+            <Link
+              href="/career#btech"
+              className="text-[#111111] hover:text-black transition-colors"
+            >
+              B.Tech (Machine Learning)
+            </Link>
+          )}
+          {mbaActive && (
+            <Link
+              href="/career#mba"
+              className="text-[#111111] hover:text-black transition-colors"
+            >
+              MBA Role
+            </Link>
+          )}
           <Link
             href="/"
             className="text-[#666666] hover:text-black transition-colors flex items-center gap-1"
@@ -110,20 +127,24 @@ export default function CareerNavbar({ isOpen }: CareerNavbarProps) {
       {/* Mobile Drawer */}
       {mobileMenuOpen && (
         <div className="md:hidden border-t border-[#EAEAEA] bg-white px-6 py-4 space-y-3 shadow-lg">
-          <Link
-            href="/career#btech"
-            onClick={() => setMobileMenuOpen(false)}
-            className="block text-sm font-medium text-[#111111] py-1.5"
-          >
-            B.Tech: Machine Learning Role
-          </Link>
-          <Link
-            href="/career#mba"
-            onClick={() => setMobileMenuOpen(false)}
-            className="block text-sm font-medium text-[#111111] py-1.5"
-          >
-            MBA: Management &amp; Growth Role
-          </Link>
+          {btechActive && (
+            <Link
+              href="/career#btech"
+              onClick={() => setMobileMenuOpen(false)}
+              className="block text-sm font-medium text-[#111111] py-1.5"
+            >
+              B.Tech: Machine Learning Role
+            </Link>
+          )}
+          {mbaActive && (
+            <Link
+              href="/career#mba"
+              onClick={() => setMobileMenuOpen(false)}
+              className="block text-sm font-medium text-[#111111] py-1.5"
+            >
+              MBA: Management &amp; Growth Role
+            </Link>
+          )}
           <Link
             href="/"
             onClick={() => setMobileMenuOpen(false)}
