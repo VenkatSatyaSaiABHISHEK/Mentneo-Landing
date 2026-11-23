@@ -19,8 +19,13 @@ export async function GET(req: NextRequest) {
     const status = searchParams.get("status");
     const position = searchParams.get("position");
     const gradYear = searchParams.get("gradYear");
+    const bin = searchParams.get("bin");
 
     let apps = await getAllStoredApplications();
+
+    if (bin && bin !== "all") {
+      apps = apps.filter((a) => (a.cohort_id || "bin-1") === bin);
+    }
 
     if (type && ["btech", "mba", "internship"].includes(type)) {
       apps = apps.filter((a) => a.applicant_type === type);
@@ -42,7 +47,8 @@ export async function GET(req: NextRequest) {
 
     const rows = apps.map((a) => ({
       Reference: a.application_reference,
-      Cohort: a.applicant_type.toUpperCase(),
+      Role: a.applicant_type.toUpperCase(),
+      "Cohort Bin": a.cohort_name || (a.cohort_id === "bin-1" || !a.cohort_id ? "KIET Group of Institutions (Nov 2026 Archive)" : a.cohort_id),
       "Full Name": a.full_name,
       Email: a.email,
       Mobile: a.mobile,
@@ -68,7 +74,8 @@ export async function GET(req: NextRequest) {
     // Format widths
     const columnWidths = [
       { wch: 18 }, // Reference
-      { wch: 10 }, // Cohort
+      { wch: 10 }, // Role
+      { wch: 32 }, // Cohort Bin
       { wch: 22 }, // Full Name
       { wch: 26 }, // Email
       { wch: 14 }, // Mobile

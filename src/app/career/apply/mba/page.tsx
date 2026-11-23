@@ -870,7 +870,7 @@ export default function MbaApplyDynamicPage() {
       </header>
 
       {/* Main Multi-Step Form */}
-      <main className="flex-1 max-w-2xl w-full mx-auto px-6 py-10">
+      <main className="flex-1 max-w-4xl w-full mx-auto px-6 sm:px-8 py-10">
         {/* Step Progress Indicators */}
         <div className="mb-8">
           <div className="flex items-center justify-between text-[11px] font-mono text-[#737883] mb-2">
@@ -902,7 +902,7 @@ export default function MbaApplyDynamicPage() {
                 initial={{ opacity: 0, x: 12 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -12 }}
-                className="space-y-5"
+                className="space-y-6"
               >
                 <div>
                   <h2 className="text-xl font-bold tracking-tight text-[#0B0C0E]">Personal &amp; Institution Credentials</h2>
@@ -911,95 +911,97 @@ export default function MbaApplyDynamicPage() {
                   </p>
                 </div>
 
-                {isFieldEnabled("fullName") && (
-                  <div>
-                    <label className="block text-xs font-medium text-[#0B0C0E] mb-1.5">
-                      Full Legal Name {isFieldRequired("fullName", true) && <span className="text-rose-600">* (Mandatory)</span>}
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.fullName}
-                      onChange={(e) => updateField("fullName", e.target.value)}
-                      placeholder={getFieldConfig("fullName")?.placeholder || "e.g. Jane Smith"}
-                      className={`w-full px-4 py-2.5 rounded-xl border text-xs text-[#0B0C0E] bg-[#FAFAFA] focus:outline-none focus:bg-white transition-all ${
-                        errors.fullName ? "border-rose-400 bg-rose-50/20" : "border-[#E9E7E1] focus:border-[#0B0C0E]"
-                      }`}
-                    />
-                    {errors.fullName && <p className="text-[11px] text-rose-600 mt-1">{errors.fullName}</p>}
-                  </div>
-                )}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
+                  {isFieldEnabled("fullName") && (
+                    <div>
+                      <label className="block text-xs font-medium text-[#0B0C0E] mb-1.5">
+                        Full Legal Name {isFieldRequired("fullName", true) && <span className="text-rose-600">* (Mandatory)</span>}
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.fullName}
+                        onChange={(e) => updateField("fullName", e.target.value)}
+                        placeholder={getFieldConfig("fullName")?.placeholder || "e.g. Jane Smith"}
+                        className={`w-full px-4 py-2.5 rounded-xl border text-xs text-[#0B0C0E] bg-[#FAFAFA] focus:outline-none focus:bg-white transition-all ${
+                          errors.fullName ? "border-rose-400 bg-rose-50/20" : "border-[#E9E7E1] focus:border-[#0B0C0E]"
+                        }`}
+                      />
+                      {errors.fullName && <p className="text-[11px] text-rose-600 mt-1">{errors.fullName}</p>}
+                    </div>
+                  )}
 
-                {isFieldEnabled("email") && (
-                  <div>
-                    <label className="block text-xs font-medium text-[#0B0C0E] mb-1.5">
-                      Email Address {isFieldRequired("email", true) && <span className="text-rose-600">* (Mandatory)</span>}
-                    </label>
-                    <input
-                      type="email"
-                      value={formData.email}
-                      onChange={(e) => updateField("email", e.target.value)}
-                      placeholder={getFieldConfig("email")?.placeholder || "e.g. jane@businessschool.edu"}
-                      className={`w-full px-4 py-2.5 rounded-xl border text-xs text-[#0B0C0E] bg-[#FAFAFA] focus:outline-none focus:bg-white transition-all ${
-                        errors.email ? "border-rose-400 bg-rose-50/20" : "border-[#E9E7E1] focus:border-[#0B0C0E]"
-                      }`}
-                    />
-                    {errors.email && <p className="text-[11px] text-rose-600 mt-1">{errors.email}</p>}
-                  </div>
-                )}
+                  {isFieldEnabled("email") && (
+                    <div>
+                      <label className="block text-xs font-medium text-[#0B0C0E] mb-1.5">
+                        Email Address {isFieldRequired("email", true) && <span className="text-rose-600">* (Mandatory)</span>}
+                      </label>
+                      <input
+                        type="email"
+                        value={formData.email}
+                        onChange={(e) => updateField("email", e.target.value)}
+                        placeholder={getFieldConfig("email")?.placeholder || "e.g. jane@businessschool.edu"}
+                        className={`w-full px-4 py-2.5 rounded-xl border text-xs text-[#0B0C0E] bg-[#FAFAFA] focus:outline-none focus:bg-white transition-all ${
+                          errors.email ? "border-rose-400 bg-rose-50/20" : "border-[#E9E7E1] focus:border-[#0B0C0E]"
+                        }`}
+                      />
+                      {errors.email && <p className="text-[11px] text-rose-600 mt-1">{errors.email}</p>}
+                    </div>
+                  )}
 
-                {isFieldEnabled("mobile") && (
-                  <div>
-                    <label className="block text-xs font-medium text-[#0B0C0E] mb-1.5">
-                      Mobile Number {isFieldRequired("mobile", true) && <span className="text-rose-600">* (Mandatory)</span>}
-                    </label>
-                    <input
-                      type="tel"
-                      value={formData.mobile}
-                      onChange={(e) => updateField("mobile", e.target.value)}
-                      placeholder={getFieldConfig("mobile")?.placeholder || "e.g. +91 98765 43210"}
-                      className={`w-full px-4 py-2.5 rounded-xl border text-xs text-[#0B0C0E] bg-[#FAFAFA] focus:outline-none focus:bg-white transition-all ${
-                        errors.mobile ? "border-rose-400 bg-rose-50/20" : "border-[#E9E7E1] focus:border-[#0B0C0E]"
-                      }`}
-                    />
-                    {errors.mobile && <p className="text-[11px] text-rose-600 mt-1">{errors.mobile}</p>}
-                  </div>
-                )}
+                  {isFieldEnabled("mobile") && (
+                    <div>
+                      <label className="block text-xs font-medium text-[#0B0C0E] mb-1.5">
+                        Mobile Number {isFieldRequired("mobile", true) && <span className="text-rose-600">* (Mandatory)</span>}
+                      </label>
+                      <input
+                        type="tel"
+                        value={formData.mobile}
+                        onChange={(e) => updateField("mobile", e.target.value)}
+                        placeholder={getFieldConfig("mobile")?.placeholder || "e.g. +91 98765 43210"}
+                        className={`w-full px-4 py-2.5 rounded-xl border text-xs text-[#0B0C0E] bg-[#FAFAFA] focus:outline-none focus:bg-white transition-all ${
+                          errors.mobile ? "border-rose-400 bg-rose-50/20" : "border-[#E9E7E1] focus:border-[#0B0C0E]"
+                        }`}
+                      />
+                      {errors.mobile && <p className="text-[11px] text-rose-600 mt-1">{errors.mobile}</p>}
+                    </div>
+                  )}
 
-                {isFieldEnabled("collegeName") && (
-                  <div>
-                    <label className="block text-xs font-medium text-[#0B0C0E] mb-1.5">
-                      Business School / University {isFieldRequired("collegeName", true) && <span className="text-rose-600">* (Mandatory)</span>}
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.collegeName}
-                      onChange={(e) => updateField("collegeName", e.target.value)}
-                      placeholder={getFieldConfig("collegeName")?.placeholder || "e.g. Indian Institute of Management"}
-                      className={`w-full px-4 py-2.5 rounded-xl border text-xs text-[#0B0C0E] bg-[#FAFAFA] focus:outline-none focus:bg-white transition-all ${
-                        errors.collegeName ? "border-rose-400 bg-rose-50/20" : "border-[#E9E7E1] focus:border-[#0B0C0E]"
-                      }`}
-                    />
-                    {errors.collegeName && <p className="text-[11px] text-rose-600 mt-1">{errors.collegeName}</p>}
-                  </div>
-                )}
+                  {isFieldEnabled("collegeRollNumber") && (
+                    <div>
+                      <label className="block text-xs font-medium text-[#0B0C0E] mb-1.5">
+                        Student Roll / Registration Number {isFieldRequired("collegeRollNumber", true) && <span className="text-rose-600">* (Mandatory)</span>}
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.collegeRollNumber}
+                        onChange={(e) => updateField("collegeRollNumber", e.target.value)}
+                        placeholder={getFieldConfig("collegeRollNumber")?.placeholder || "e.g. MBA-2026-042"}
+                        className={`w-full px-4 py-2.5 rounded-xl border text-xs text-[#0B0C0E] bg-[#FAFAFA] focus:outline-none focus:bg-white transition-all ${
+                          errors.collegeRollNumber ? "border-rose-400 bg-rose-50/20" : "border-[#E9E7E1] focus:border-[#0B0C0E]"
+                        }`}
+                      />
+                      {errors.collegeRollNumber && <p className="text-[11px] text-rose-600 mt-1">{errors.collegeRollNumber}</p>}
+                    </div>
+                  )}
 
-                {isFieldEnabled("collegeRollNumber") && (
-                  <div>
-                    <label className="block text-xs font-medium text-[#0B0C0E] mb-1.5">
-                      Student Roll / Registration Number {isFieldRequired("collegeRollNumber", true) && <span className="text-rose-600">* (Mandatory)</span>}
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.collegeRollNumber}
-                      onChange={(e) => updateField("collegeRollNumber", e.target.value)}
-                      placeholder={getFieldConfig("collegeRollNumber")?.placeholder || "e.g. MBA-2026-042"}
-                      className={`w-full px-4 py-2.5 rounded-xl border text-xs text-[#0B0C0E] bg-[#FAFAFA] focus:outline-none focus:bg-white transition-all ${
-                        errors.collegeRollNumber ? "border-rose-400 bg-rose-50/20" : "border-[#E9E7E1] focus:border-[#0B0C0E]"
-                      }`}
-                    />
-                    {errors.collegeRollNumber && <p className="text-[11px] text-rose-600 mt-1">{errors.collegeRollNumber}</p>}
-                  </div>
-                )}
+                  {isFieldEnabled("collegeName") && (
+                    <div className="md:col-span-2">
+                      <label className="block text-xs font-medium text-[#0B0C0E] mb-1.5">
+                        Business School / University {isFieldRequired("collegeName", true) && <span className="text-rose-600">* (Mandatory)</span>}
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.collegeName}
+                        onChange={(e) => updateField("collegeName", e.target.value)}
+                        placeholder={getFieldConfig("collegeName")?.placeholder || "e.g. Indian Institute of Management"}
+                        className={`w-full px-4 py-2.5 rounded-xl border text-xs text-[#0B0C0E] bg-[#FAFAFA] focus:outline-none focus:bg-white transition-all ${
+                          errors.collegeName ? "border-rose-400 bg-rose-50/20" : "border-[#E9E7E1] focus:border-[#0B0C0E]"
+                        }`}
+                      />
+                      {errors.collegeName && <p className="text-[11px] text-rose-600 mt-1">{errors.collegeName}</p>}
+                    </div>
+                  )}
+                </div>
               </motion.div>
             )}
 
@@ -1010,7 +1012,7 @@ export default function MbaApplyDynamicPage() {
                 initial={{ opacity: 0, x: 12 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -12 }}
-                className="space-y-5"
+                className="space-y-6"
               >
                 <div>
                   <h2 className="text-xl font-bold tracking-tight text-[#0B0C0E]">Specialization &amp; Metrics</h2>
@@ -1019,54 +1021,36 @@ export default function MbaApplyDynamicPage() {
                   </p>
                 </div>
 
-                {isFieldEnabled("mbaSpecialization") && (
-                  <div>
-                    <label className="block text-xs font-medium text-[#0B0C0E] mb-1.5">
-                      MBA Specialization {isFieldRequired("mbaSpecialization", true) && <span className="text-rose-600">* (Mandatory)</span>}
-                    </label>
-                    <select
-                      value={formData.mbaSpecialization}
-                      onChange={(e) => updateField("mbaSpecialization", e.target.value)}
-                      className="w-full px-4 py-2.5 rounded-xl border border-[#E9E7E1] text-xs text-[#0B0C0E] bg-[#FAFAFA] focus:outline-none focus:bg-white transition-all"
-                    >
-                      {(getFieldConfig("mbaSpecialization")?.options || [
-                        "Marketing",
-                        "Finance",
-                        "Human Resources (HR)",
-                        "Business Analytics",
-                        "Operations",
-                        "General Management",
-                        "Other",
-                      ]).map((spec) => (
-                        <option key={spec} value={spec}>
-                          {spec}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                )}
-
-                <div className="grid grid-cols-2 gap-4">
-                  {isFieldEnabled("currentCgpa") && (
-                    <div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
+                  {isFieldEnabled("mbaSpecialization") && (
+                    <div className="md:col-span-1">
                       <label className="block text-xs font-medium text-[#0B0C0E] mb-1.5">
-                        Current CGPA / % {isFieldRequired("currentCgpa", true) && <span className="text-rose-600">* (Mandatory)</span>}
+                        MBA Specialization {isFieldRequired("mbaSpecialization", true) && <span className="text-rose-600">* (Mandatory)</span>}
                       </label>
-                      <input
-                        type="text"
-                        value={formData.currentCgpa}
-                        onChange={(e) => updateField("currentCgpa", e.target.value)}
-                        placeholder="e.g. 8.5 / 10"
-                        className={`w-full px-4 py-2.5 rounded-xl border text-xs text-[#0B0C0E] bg-[#FAFAFA] focus:outline-none focus:bg-white transition-all ${
-                          errors.currentCgpa ? "border-rose-400 bg-rose-50/20" : "border-[#E9E7E1] focus:border-[#0B0C0E]"
-                        }`}
-                      />
-                      {errors.currentCgpa && <p className="text-[11px] text-rose-600 mt-1">{errors.currentCgpa}</p>}
+                      <select
+                        value={formData.mbaSpecialization}
+                        onChange={(e) => updateField("mbaSpecialization", e.target.value)}
+                        className="w-full px-4 py-2.5 rounded-xl border border-[#E9E7E1] text-xs text-[#0B0C0E] bg-[#FAFAFA] focus:outline-none focus:bg-white transition-all"
+                      >
+                        {(getFieldConfig("mbaSpecialization")?.options || [
+                          "Marketing",
+                          "Finance",
+                          "Human Resources (HR)",
+                          "Business Analytics",
+                          "Operations",
+                          "General Management",
+                          "Other",
+                        ]).map((spec) => (
+                          <option key={spec} value={spec}>
+                            {spec}
+                          </option>
+                        ))}
+                      </select>
                     </div>
                   )}
 
                   {isFieldEnabled("graduationYear") && (
-                    <div>
+                    <div className="md:col-span-1">
                       <label className="block text-xs font-medium text-[#0B0C0E] mb-1.5">
                         Graduation Batch {isFieldRequired("graduationYear", true) && <span className="text-rose-600">* (Mandatory)</span>}
                       </label>
@@ -1081,6 +1065,24 @@ export default function MbaApplyDynamicPage() {
                           </option>
                         ))}
                       </select>
+                    </div>
+                  )}
+
+                  {isFieldEnabled("currentCgpa") && (
+                    <div className="md:col-span-1">
+                      <label className="block text-xs font-medium text-[#0B0C0E] mb-1.5">
+                        Current CGPA / % {isFieldRequired("currentCgpa", true) && <span className="text-rose-600">* (Mandatory)</span>}
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.currentCgpa}
+                        onChange={(e) => updateField("currentCgpa", e.target.value)}
+                        placeholder="e.g. 8.5 / 10"
+                        className={`w-full px-4 py-2.5 rounded-xl border text-xs text-[#0B0C0E] bg-[#FAFAFA] focus:outline-none focus:bg-white transition-all ${
+                          errors.currentCgpa ? "border-rose-400 bg-rose-50/20" : "border-[#E9E7E1] focus:border-[#0B0C0E]"
+                        }`}
+                      />
+                      {errors.currentCgpa && <p className="text-[11px] text-rose-600 mt-1">{errors.currentCgpa}</p>}
                     </div>
                   )}
                 </div>
@@ -1126,7 +1128,7 @@ export default function MbaApplyDynamicPage() {
                 initial={{ opacity: 0, x: 12 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -12 }}
-                className="space-y-5"
+                className="space-y-6"
               >
                 <div>
                   <h2 className="text-xl font-bold tracking-tight text-[#0B0C0E]">Commercial Acumen &amp; Experience</h2>
@@ -1135,59 +1137,61 @@ export default function MbaApplyDynamicPage() {
                   </p>
                 </div>
 
-                {isFieldEnabled("skillsStrengths") && (
-                  <div>
-                    <label className="block text-xs font-medium text-[#0B0C0E] mb-1.5">
-                      Key Strengths &amp; Acumen {isFieldRequired("skillsStrengths", true) && <span className="text-rose-600">* (Mandatory)</span>}
-                    </label>
-                    <textarea
-                      rows={3}
-                      value={formData.skillsStrengths}
-                      onChange={(e) => updateField("skillsStrengths", e.target.value)}
-                      placeholder={getFieldConfig("skillsStrengths")?.placeholder || "e.g. Enterprise Partnerships, Growth Operations, B2B Deal Negotiations, Strategic Market Analysis"}
-                      className={`w-full px-4 py-2.5 rounded-xl border text-xs text-[#0B0C0E] bg-[#FAFAFA] focus:outline-none focus:bg-white transition-all resize-none ${
-                        errors.skillsStrengths ? "border-rose-400 bg-rose-50/20" : "border-[#E9E7E1] focus:border-[#0B0C0E]"
-                      }`}
-                    />
-                    {errors.skillsStrengths && <p className="text-[11px] text-rose-600 mt-1">{errors.skillsStrengths}</p>}
-                  </div>
-                )}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
+                  {isFieldEnabled("skillsStrengths") && (
+                    <div className="md:col-span-2">
+                      <label className="block text-xs font-medium text-[#0B0C0E] mb-1.5">
+                        Key Strengths &amp; Acumen {isFieldRequired("skillsStrengths", true) && <span className="text-rose-600">* (Mandatory)</span>}
+                      </label>
+                      <textarea
+                        rows={3}
+                        value={formData.skillsStrengths}
+                        onChange={(e) => updateField("skillsStrengths", e.target.value)}
+                        placeholder={getFieldConfig("skillsStrengths")?.placeholder || "e.g. Enterprise Partnerships, Growth Operations, B2B Deal Negotiations, Strategic Market Analysis"}
+                        className={`w-full px-4 py-2.5 rounded-xl border text-xs text-[#0B0C0E] bg-[#FAFAFA] focus:outline-none focus:bg-white transition-all resize-none ${
+                          errors.skillsStrengths ? "border-rose-400 bg-rose-50/20" : "border-[#E9E7E1] focus:border-[#0B0C0E]"
+                        }`}
+                      />
+                      {errors.skillsStrengths && <p className="text-[11px] text-rose-600 mt-1">{errors.skillsStrengths}</p>}
+                    </div>
+                  )}
 
-                {isFieldEnabled("previousExperience") && (
-                  <div>
-                    <label className="block text-xs font-medium text-[#0B0C0E] mb-1.5">
-                      Prior Experience / Internship Details {isFieldRequired("previousExperience", false) && <span className="text-rose-600">* (Mandatory)</span>}
-                    </label>
-                    <textarea
-                      rows={3}
-                      value={formData.previousExperience}
-                      onChange={(e) => updateField("previousExperience", e.target.value)}
-                      placeholder={getFieldConfig("previousExperience")?.placeholder || "Briefly outline any past leadership, internships, or corporate engagements."}
-                      className={`w-full px-4 py-2.5 rounded-xl border text-xs text-[#0B0C0E] bg-[#FAFAFA] focus:outline-none focus:bg-white transition-all resize-none ${
-                        errors.previousExperience ? "border-rose-400 bg-rose-50/20" : "border-[#E9E7E1] focus:border-[#0B0C0E]"
-                      }`}
-                    />
-                    {errors.previousExperience && <p className="text-[11px] text-rose-600 mt-1">{errors.previousExperience}</p>}
-                  </div>
-                )}
+                  {isFieldEnabled("previousExperience") && (
+                    <div className="md:col-span-2">
+                      <label className="block text-xs font-medium text-[#0B0C0E] mb-1.5">
+                        Prior Experience / Internship Details {isFieldRequired("previousExperience", false) && <span className="text-rose-600">* (Mandatory)</span>}
+                      </label>
+                      <textarea
+                        rows={3}
+                        value={formData.previousExperience}
+                        onChange={(e) => updateField("previousExperience", e.target.value)}
+                        placeholder={getFieldConfig("previousExperience")?.placeholder || "Briefly outline any past leadership, internships, or corporate engagements."}
+                        className={`w-full px-4 py-2.5 rounded-xl border text-xs text-[#0B0C0E] bg-[#FAFAFA] focus:outline-none focus:bg-white transition-all resize-none ${
+                          errors.previousExperience ? "border-rose-400 bg-rose-50/20" : "border-[#E9E7E1] focus:border-[#0B0C0E]"
+                        }`}
+                      />
+                      {errors.previousExperience && <p className="text-[11px] text-rose-600 mt-1">{errors.previousExperience}</p>}
+                    </div>
+                  )}
 
-                {isFieldEnabled("linkedinUrl") && (
-                  <div>
-                    <label className="block text-xs font-medium text-[#0B0C0E] mb-1.5">
-                      LinkedIn Profile URL {isFieldRequired("linkedinUrl", false) && <span className="text-rose-600">* (Mandatory)</span>}
-                    </label>
-                    <input
-                      type="url"
-                      value={formData.linkedinUrl}
-                      onChange={(e) => updateField("linkedinUrl", e.target.value)}
-                      placeholder="https://linkedin.com/in/yourhandle"
-                      className={`w-full px-4 py-2.5 rounded-xl border text-xs text-[#0B0C0E] bg-[#FAFAFA] focus:outline-none focus:bg-white transition-all ${
-                        errors.linkedinUrl ? "border-rose-400 bg-rose-50/20" : "border-[#E9E7E1] focus:border-[#0B0C0E]"
-                      }`}
-                    />
-                    {errors.linkedinUrl && <p className="text-[11px] text-rose-600 mt-1">{errors.linkedinUrl}</p>}
-                  </div>
-                )}
+                  {isFieldEnabled("linkedinUrl") && (
+                    <div className="md:col-span-1">
+                      <label className="block text-xs font-medium text-[#0B0C0E] mb-1.5">
+                        LinkedIn Profile URL {isFieldRequired("linkedinUrl", false) && <span className="text-rose-600">* (Mandatory)</span>}
+                      </label>
+                      <input
+                        type="url"
+                        value={formData.linkedinUrl}
+                        onChange={(e) => updateField("linkedinUrl", e.target.value)}
+                        placeholder="https://linkedin.com/in/yourhandle"
+                        className={`w-full px-4 py-2.5 rounded-xl border text-xs text-[#0B0C0E] bg-[#FAFAFA] focus:outline-none focus:bg-white transition-all ${
+                          errors.linkedinUrl ? "border-rose-400 bg-rose-50/20" : "border-[#E9E7E1] focus:border-[#0B0C0E]"
+                        }`}
+                      />
+                      {errors.linkedinUrl && <p className="text-[11px] text-rose-600 mt-1">{errors.linkedinUrl}</p>}
+                    </div>
+                  )}
+                </div>
               </motion.div>
             )}
 
@@ -1245,7 +1249,7 @@ export default function MbaApplyDynamicPage() {
                 initial={{ opacity: 0, x: 12 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -12 }}
-                className="space-y-5"
+                className="space-y-6"
               >
                 <div>
                   <h2 className="text-xl font-bold tracking-tight text-[#0B0C0E]">Special Assessments &amp; Role Inquiries</h2>
@@ -1254,52 +1258,57 @@ export default function MbaApplyDynamicPage() {
                   </p>
                 </div>
 
-                {step6CustomFields.map((field) => (
-                  <div key={field.id} className="space-y-1.5">
-                    <label className="block text-xs font-medium text-[#0B0C0E]">
-                      {field.label} {field.required && <span className="text-rose-600">* (Mandatory)</span>}
-                    </label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
+                  {step6CustomFields.map((field) => (
+                    <div
+                      key={field.id}
+                      className={`space-y-1.5 ${field.type === "textarea" ? "md:col-span-2" : "md:col-span-1"}`}
+                    >
+                      <label className="block text-xs font-medium text-[#0B0C0E]">
+                        {field.label} {field.required && <span className="text-rose-600">* (Mandatory)</span>}
+                      </label>
 
-                    {field.type === "textarea" ? (
-                      <textarea
-                        rows={3}
-                        value={customFields[field.id] || ""}
-                        onChange={(e) => updateCustomField(field.id, e.target.value)}
-                        placeholder={field.placeholder || "Enter details..."}
-                        className={`w-full px-4 py-2.5 rounded-xl border text-xs text-[#0B0C0E] bg-[#FAFAFA] focus:outline-none focus:bg-white resize-none ${
-                          errors[field.id] ? "border-rose-400 bg-rose-50/20" : "border-[#E9E7E1] focus:border-[#0B0C0E]"
-                        }`}
-                      />
-                    ) : field.type === "select" ? (
-                      <select
-                        value={customFields[field.id] || ""}
-                        onChange={(e) => updateCustomField(field.id, e.target.value)}
-                        className={`w-full px-4 py-2.5 rounded-xl border text-xs text-[#0B0C0E] bg-[#FAFAFA] focus:outline-none focus:bg-white ${
-                          errors[field.id] ? "border-rose-400 bg-rose-50/20" : "border-[#E9E7E1] focus:border-[#0B0C0E]"
-                        }`}
-                      >
-                        <option value="">-- Select an option --</option>
-                        {(field.options || []).map((opt) => (
-                          <option key={opt} value={opt}>
-                            {opt}
-                          </option>
-                        ))}
-                      </select>
-                    ) : (
-                      <input
-                        type={field.type === "number" ? "number" : field.type === "url" ? "url" : "text"}
-                        value={customFields[field.id] || ""}
-                        onChange={(e) => updateCustomField(field.id, e.target.value)}
-                        placeholder={field.placeholder || "Enter details..."}
-                        className={`w-full px-4 py-2.5 rounded-xl border text-xs text-[#0B0C0E] bg-[#FAFAFA] focus:outline-none focus:bg-white ${
-                          errors[field.id] ? "border-rose-400 bg-rose-50/20" : "border-[#E9E7E1] focus:border-[#0B0C0E]"
-                        }`}
-                      />
-                    )}
+                      {field.type === "textarea" ? (
+                        <textarea
+                          rows={3}
+                          value={customFields[field.id] || ""}
+                          onChange={(e) => updateCustomField(field.id, e.target.value)}
+                          placeholder={field.placeholder || "Enter details..."}
+                          className={`w-full px-4 py-2.5 rounded-xl border text-xs text-[#0B0C0E] bg-[#FAFAFA] focus:outline-none focus:bg-white resize-none ${
+                            errors[field.id] ? "border-rose-400 bg-rose-50/20" : "border-[#E9E7E1] focus:border-[#0B0C0E]"
+                          }`}
+                        />
+                      ) : field.type === "select" ? (
+                        <select
+                          value={customFields[field.id] || ""}
+                          onChange={(e) => updateCustomField(field.id, e.target.value)}
+                          className={`w-full px-4 py-2.5 rounded-xl border text-xs text-[#0B0C0E] bg-[#FAFAFA] focus:outline-none focus:bg-white ${
+                            errors[field.id] ? "border-rose-400 bg-rose-50/20" : "border-[#E9E7E1] focus:border-[#0B0C0E]"
+                          }`}
+                        >
+                          <option value="">-- Select an option --</option>
+                          {(field.options || []).map((opt) => (
+                            <option key={opt} value={opt}>
+                              {opt}
+                            </option>
+                          ))}
+                        </select>
+                      ) : (
+                        <input
+                          type={field.type === "number" ? "number" : field.type === "url" ? "url" : "text"}
+                          value={customFields[field.id] || ""}
+                          onChange={(e) => updateCustomField(field.id, e.target.value)}
+                          placeholder={field.placeholder || "Enter details..."}
+                          className={`w-full px-4 py-2.5 rounded-xl border text-xs text-[#0B0C0E] bg-[#FAFAFA] focus:outline-none focus:bg-white ${
+                            errors[field.id] ? "border-rose-400 bg-rose-50/20" : "border-[#E9E7E1] focus:border-[#0B0C0E]"
+                          }`}
+                        />
+                      )}
 
-                    {errors[field.id] && <p className="text-[11px] text-rose-600 mt-1">{errors[field.id]}</p>}
-                  </div>
-                ))}
+                      {errors[field.id] && <p className="text-[11px] text-rose-600 mt-1">{errors[field.id]}</p>}
+                    </div>
+                  ))}
+                </div>
               </motion.div>
             )}
 

@@ -154,6 +154,7 @@ export default function AdminPage() {
   const [noteSubmitting, setNoteSubmitting] = useState(false);
 
   // Export panel states
+  const [exportBin, setExportBin] = useState("all");
   const [exportType, setExportType] = useState("all");
   const [exportFormat, setExportFormat] = useState("xlsx");
   const [exportStatus, setExportStatus] = useState("all");
@@ -1368,17 +1369,36 @@ export default function AdminPage() {
 
             <div className="space-y-4 pt-2">
               <div>
+                <label className="block text-xs font-mono uppercase tracking-wide text-[#4A4E57] mb-1.5 flex items-center justify-between">
+                  <span>Source Cohort Bin</span>
+                  <span className="text-[10px] text-[#737883] font-sans">Filter by recruitment drive</span>
+                </label>
+                <select
+                  value={exportBin}
+                  onChange={(e) => setExportBin(e.target.value)}
+                  className="w-full px-4 py-2.5 rounded-xl border border-[#E9E7E1] bg-[#FAFAFA] text-xs text-[#0B0C0E] focus:outline-none focus:border-[#0B0C0E]"
+                >
+                  <option value="all">All Cohort Bins (Entire Registry - {metrics.total || 567}+ Candidates)</option>
+                  {binsList.map((bin) => (
+                    <option key={bin.id} value={bin.id}>
+                      {bin.name} ({bin.applicationCount ?? 0} candidates){bin.id === formSettings?.activeBinId ? " [ACTIVE INTAKE]" : ""}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
                 <label className="block text-xs font-mono uppercase tracking-wide text-[#4A4E57] mb-1.5">
-                  Cohort Filter
+                  Role / Track Filter
                 </label>
                 <select
                   value={exportType}
                   onChange={(e) => setExportType(e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-xl border border-[#E9E7E1] bg-[#FAFAFA] text-xs text-[#0B0C0E]"
+                  className="w-full px-4 py-2.5 rounded-xl border border-[#E9E7E1] bg-[#FAFAFA] text-xs text-[#0B0C0E] focus:outline-none focus:border-[#0B0C0E]"
                 >
-                  <option value="all">All Applicants (BTech + MBA + Internship)</option>
-                  <option value="btech">BTech Hiring Only</option>
-                  <option value="mba">MBA Hiring Only</option>
+                  <option value="all">All Candidates (B.Tech ML + MBA + Internship)</option>
+                  <option value="btech">B.Tech Machine Learning Track Only</option>
+                  <option value="mba">MBA Management &amp; Operations Only</option>
                   <option value="internship">Internship Registrations Only</option>
                 </select>
               </div>
@@ -1433,7 +1453,7 @@ export default function AdminPage() {
 
               <div className="pt-4">
                 <a
-                  href={`/api/ca/admin/export?format=${exportFormat}&type=${exportType}&status=${exportStatus}`}
+                  href={`/api/ca/admin/export?format=${exportFormat}&type=${exportType}&status=${exportStatus}&bin=${exportBin}`}
                   download
                   className="w-full py-3.5 rounded-xl bg-[#2F5BFF] text-white text-xs font-semibold hover:bg-[#2563EB] transition-all flex items-center justify-center gap-2 shadow-sm"
                 >
