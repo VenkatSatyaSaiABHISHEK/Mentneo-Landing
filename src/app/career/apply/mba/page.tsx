@@ -116,8 +116,9 @@ export default function MbaApplyDynamicPage() {
         });
         if (res.ok) {
           const json = await res.json();
-          if (json.success && json.data) {
-            setConfig(json.data);
+          const d = json.data || json.roleConfig || json;
+          if (json.success && d) {
+            setConfig(d);
           }
         }
       } catch (err) {

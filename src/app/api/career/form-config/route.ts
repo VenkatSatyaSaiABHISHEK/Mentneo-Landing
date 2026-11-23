@@ -25,10 +25,12 @@ export async function GET(req: NextRequest) {
     });
 
     if (role === "btech") {
+      const roleConfig = sanitizeRole(settings.btech);
       return NextResponse.json(
         {
           success: true,
-          roleConfig: sanitizeRole(settings.btech),
+          data: roleConfig,
+          roleConfig,
           globalOpen: settings.globalOpen,
           activeBinName: activeBin?.name || "Active Cohort",
         },
@@ -41,10 +43,12 @@ export async function GET(req: NextRequest) {
     }
 
     if (role === "mba") {
+      const roleConfig = sanitizeRole(settings.mba);
       return NextResponse.json(
         {
           success: true,
-          roleConfig: sanitizeRole(settings.mba),
+          data: roleConfig,
+          roleConfig,
           globalOpen: settings.globalOpen,
           activeBinName: activeBin?.name || "Active Cohort",
         },
