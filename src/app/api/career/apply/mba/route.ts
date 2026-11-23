@@ -73,14 +73,19 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Duplicate submission prevention: check existing applications
+    // Target cohort bin for incoming submission
+    const targetBinId = settings.mba.targetBinId || settings.activeBinId || "bin-1";
+    const targetBin = settings.bins.find((b) => b.id === targetBinId) || settings.bins[0];
+
+    // Duplicate submission prevention: check existing applications in THIS cohort bin only
     try {
-      const existingApps = await getAllStoredApplications();
+      const allApps = await getAllStoredApplications();
+      const binApps = allApps.filter((a) => (a.cohort_id || "bin-1") === targetBinId);
       const cleanMobile = mobile.replace(/\D/g, "");
       const cleanRoll = collegeRollNumber.toLowerCase().trim();
       const cleanEmail = email.toLowerCase().trim();
 
-      const duplicate = existingApps.find((a) => {
+      const duplicate = binApps.find((a) => {
         const dupEmail = a.email && a.email.toLowerCase().trim() === cleanEmail;
         const dupMobile = cleanMobile.length >= 10 && a.mobile && a.mobile.replace(/\D/g, "") === cleanMobile;
         const dupRoll = cleanRoll && a.college_roll_number && a.college_roll_number.toLowerCase().trim() === cleanRoll;
@@ -91,7 +96,7 @@ export async function POST(req: NextRequest) {
         return NextResponse.json(
           {
             success: false,
-            error: `An application has already been registered with this Email, Mobile number, or Roll number. Your reference code is ${duplicate.application_reference}. Duplicate submissions are not allowed.`,
+            error: `An application has already been registered in this cohort with this Email, Mobile number, or Roll number. Your reference code is ${duplicate.application_reference}. Duplicate submissions to the same cohort are not allowed.`,
             duplicate: true,
             reference: duplicate.application_reference,
           },
@@ -161,10 +166,6 @@ export async function POST(req: NextRequest) {
       const storageResult = await saveResumeFile(reference, fileMeta);
       storageKey = storageResult.key;
     }
-
-    // Determine target bin
-    const targetBinId = settings.mba.targetBinId || settings.activeBinId || "bin-2";
-    const targetBin = settings.bins.find((b) => b.id === targetBinId) || settings.bins[0];
 
     // Insert into local SQLite
     let appId = 0;
